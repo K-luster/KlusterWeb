@@ -19,7 +19,7 @@ bin/
 
 
 ##
-/application-secure.yml
+KlusterWeb/KlusterWeb/src/main/resources/application-secure.yml
 ### IntelliJ IDEA ###
 .idea
 *.iws
