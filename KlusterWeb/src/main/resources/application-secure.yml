@@ -1,0 +1,8 @@
+jenkins:
+  secret-key: 1155e835346bc3eace0a124708f670922b
+spring:
+  datasource:
+    url:
+      jdbc:mysql://localhost:3306/kluster
+    username: root
+    password: rlaxogjs8312
