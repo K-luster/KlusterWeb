@@ -17,7 +17,7 @@ public class MemberController {
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public MemberDto login(@RequestBody MemberDto memberDto) {
+    public MemberResponseDto login(@RequestBody MemberDto memberDto) {
         String email = memberDto.getEmail();
         String password = memberDto.getPassword();
         return memberService.login(email, password);
