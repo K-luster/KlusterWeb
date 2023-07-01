@@ -33,7 +33,6 @@ public class MemberService {
         Optional<Member> member = memberRepository.findByEmail(email);
         JwtTokenInfo tokenInfo = jwtTokenProvider.generateToken(member.get());
 
-        // String email, String githubAccessToken, String schoolAuthenticated, String jwtAccessToken, String jwtRefreshToken
         return new MemberResponseDto(email, member.get().getGithubAccessToken(), member.get().getSchoolAuthenticated(), tokenInfo.getAccessToken(), tokenInfo.getRefreshToken());
     }
 
