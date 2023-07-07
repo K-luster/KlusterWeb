@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .authorizeRequests()
                 .antMatchers("/members/login").permitAll()
                 .antMatchers("/members/signup").permitAll()
+                .antMatchers("/jenkins").permitAll()
+                .antMatchers("/").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
