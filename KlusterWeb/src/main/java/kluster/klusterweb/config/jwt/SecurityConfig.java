@@ -28,22 +28,7 @@ public class SecurityConfig {
         http
                 .httpBasic().disable()
                 .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeRequests()
-                .antMatchers("/members/login").permitAll()
-                .antMatchers("/members/signup").permitAll()
-                .antMatchers("/jenkins").permitAll()
-                .antMatchers("/").permitAll()
-                .and()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling()
-                .authenticationEntryPoint(new AuthenticationEntryPoint() {
-                    @Override
-                    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
-                        throw new RuntimeException("인증 문제가 발생하였습니다");
-                    }
-                });
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         return http.build();
     }
 

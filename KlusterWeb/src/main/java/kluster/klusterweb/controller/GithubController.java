@@ -1,17 +1,14 @@
 package kluster.klusterweb.controller;
 
+import kluster.klusterweb.dto.RepositoryDto;
 import kluster.klusterweb.service.GithubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -35,8 +32,8 @@ public class GithubController {
     }
 
     @PostMapping("/github/create-repository")
-    public ResponseEntity<String> createRepository(HttpServletRequest request, @RequestBody String repositoryName) {
-        String githubAccessToken = githubService.getGithubAccessToken(request);
-        return githubService.createRepository(githubAccessToken, repositoryName);
+    public ResponseEntity<String> createRepository(@ModelAttribute("repositoryRequest") RepositoryDto.RepositoryRequestDto request) {
+        // String githubAccessToken = githubService.getGithubAccessToken(request);
+        return githubService.createRepository("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", request.getRepositoryName()); // 나중에 사용자 이름으로 githubaccesstoken 접근
     }
 }

@@ -43,19 +43,14 @@ public class GithubService {
     }
 
 
-    public ResponseEntity<String> createRepository(String accessToken, String repositoryName) {
+    public ResponseEntity<String> createRepository(String githubToken, String repositoryName) {
         RestTemplate restTemplate = new RestTemplate();
-
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "token " + accessToken);
+        headers.set("Authorization", "token " + githubToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
-
-        Map<String, String> requestBody = new HashMap<>();
-        requestBody.put("name", repositoryName);
-
-        HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody);
+        String jsonBody = "{\"name\":\"" + repositoryName + "\"}";
+        HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody, headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(GITHUB_REPO_URL, HttpMethod.POST, requestEntity, String.class);
-
         return responseEntity;
     }
 }
