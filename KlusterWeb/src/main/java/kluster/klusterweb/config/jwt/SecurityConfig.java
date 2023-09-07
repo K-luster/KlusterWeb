@@ -35,7 +35,6 @@ public class SecurityConfig {
                 .antMatchers("/members/signup").permitAll()
                 .antMatchers("/jenkins").permitAll()
                 .antMatchers("/").permitAll()
-                .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling()
