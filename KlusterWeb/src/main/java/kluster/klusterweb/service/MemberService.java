@@ -39,7 +39,10 @@ public class MemberService {
     @Transactional
     public MemberResponseDto signup(MemberDto memberDto) {
         System.out.println("memberDto = " + memberDto);
-        Member member = Member.builder()
+        if(memberRepository.findByEmail(memberDto.getEmail()).isPresent()){
+            throw new RuntimeException("이메일이 중복입니다.");
+        }
+        Member member =     Member.builder()
                 .email(memberDto.getEmail())
                 .password(memberDto.getPassword())
                 .githubAccessToken(memberDto.getGithubAccessToken())

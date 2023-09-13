@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .antMatchers("/members/login").permitAll()
                 .antMatchers("/members/signup").permitAll()
                 .antMatchers("/jenkins").permitAll()
+                .antMatchers("/auth/*").permitAll()
                 .antMatchers("/").permitAll()
                 .anyRequest().authenticated()
                 .and()
