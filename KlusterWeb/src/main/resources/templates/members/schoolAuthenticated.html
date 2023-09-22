@@ -26,7 +26,9 @@
     </div>
 
     <form action="/members/certifyCode" method="post">
-        <label for="schoolEmail">코드 입력</label>
+        <label for="email">이메일</label>
+        <input type="text" id="email" name="email">
+        <label for="code">코드 입력</label>
         <input type="text" id="code" name="code">
         <button type="submit">인증 확인</button>
     </form>

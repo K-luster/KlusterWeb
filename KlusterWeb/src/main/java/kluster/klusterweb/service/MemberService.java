@@ -24,11 +24,12 @@ public class MemberService {
                 .password(member.get().getPassword())
                 .build();
         if (memberDto.getPassword().equals(password)) {
-            if(memberDto.getSchoolAuthenticated()){
-                return memberDto;
-            }else{
-                throw new RuntimeException("학교 인증을 완료해주세요");
-            }
+            return memberDto;
+//            if(memberDto.getSchoolAuthenticated()){ // 나중에 수정
+//                return memberDto;
+//            }else{
+//                throw new RuntimeException("학교 인증을 완료해주세요");
+//            }
         } else {
             return null;
         }

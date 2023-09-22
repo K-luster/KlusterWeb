@@ -1,4 +1,4 @@
-package kluster.klusterweb.controller;
+package kluster.klusterweb.controller.login;
 
 import com.univcert.api.UnivCert;
 import kluster.klusterweb.dto.MemberDto;
@@ -47,6 +47,7 @@ public class MemberController {
     @PostMapping("/certify")
     public String certify(@RequestParam("schoolEmail") String email, Model model) throws IOException {
         System.out.println("schoolEmail = " + email);
+        UnivCert.clear(apiKey);
         Map<String, Object> objectMap = UnivCert.certify(apiKey, email, "건국대학교", Boolean.FALSE);
         String success = objectMap.get("success").toString();
         if (success.equals("false")) {
@@ -60,15 +61,15 @@ public class MemberController {
 
     @PostMapping("/certifyCode")
     public String certifyCode(@RequestParam("email") String email, @ModelAttribute("code") int code, Model model) throws IOException {
-        Map<String, Object> response = new HashMap<>();
         Map<String, Object> objectMap = UnivCert.certifyCode(apiKey, email, "건국대학교", code);
         if(objectMap.get("success").toString().equals("false")){
             String message = objectMap.get("message").toString();
+            System.out.println("message = " + message);
             memberService.updateScoolAuthenticated(email, Boolean.TRUE);
             throw new RuntimeException(message);
         }
         model.addAttribute("success", true);
-        return "redirect:/";
+        return "redirect:/login";
     }
 
 }
