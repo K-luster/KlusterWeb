@@ -1,15 +1,10 @@
 package kluster.klusterweb.service;
 
-import kluster.klusterweb.config.jwt.JwtTokenProvider;
 import kluster.klusterweb.domain.Member;
-import kluster.klusterweb.dto.JwtTokenInfo;
 import kluster.klusterweb.dto.MemberDto;
 import kluster.klusterweb.dto.MemberResponseDto;
 import kluster.klusterweb.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,37 +15,61 @@ import java.util.Optional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
-    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
-    public MemberResponseDto login(String email, String password) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
-
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-
-        System.out.println("authentication = " + authentication);
+    public MemberDto login(String email, String password) {
         Optional<Member> member = memberRepository.findByEmail(email);
-        JwtTokenInfo tokenInfo = jwtTokenProvider.generateToken(member.get());
+        MemberDto memberDto = MemberDto.builder()
+                .email(member.get().getEmail())
+                .password(member.get().getPassword())
+                .build();
+        if (memberDto.getPassword().equals(password)) {
+            if(memberDto.getSchoolAuthenticated()){
+                return memberDto;
+            }else{
+                throw new RuntimeException("학교 인증을 완료해주세요");
+            }
+        } else {
+            return null;
+        }
 
-        return new MemberResponseDto(email, member.get().getGithubAccessToken(), member.get().getSchoolAuthenticated(), tokenInfo.getAccessToken(), tokenInfo.getRefreshToken());
     }
 
     @Transactional
-    public MemberResponseDto signup(MemberDto memberDto) {
-        System.out.println("memberDto = " + memberDto);
+    public MemberDto signUp(String email, String password, String githubAccessToken) {
+        Optional<Member> check = memberRepository.findByEmail(email);
+        if (check.isPresent()) {
+            throw new RuntimeException("이미 존재하는 이메일입니다");
+        }
         Member member = Member.builder()
-                .email(memberDto.getEmail())
-                .password(memberDto.getPassword())
-                .githubAccessToken(memberDto.getGithubAccessToken())
-                .schoolAuthenticated(memberDto.getSchoolAuthenticated())
+                .email(email)
+                .password(password)
+                .githubAccessToken(githubAccessToken)
+                .schoolAuthenticated(Boolean.FALSE)
                 .build();
-        Member savedMember = memberRepository.save(member);
-        MemberResponseDto memberResponseDto = MemberResponseDto.builder()
-                .email(savedMember.getEmail())
-                .githubAccessToken(savedMember.getGithubAccessToken())
-                .schoolAuthenticated(savedMember.getSchoolAuthenticated())
+        memberRepository.save(member);
+        MemberDto memberDto = MemberDto.builder()
+                .email(member.getEmail())
+                .password(member.getPassword())
+                .githubAccessToken(member.getGithubAccessToken())
+                .schoolAuthenticated(member.getSchoolAuthenticated())
                 .build();
-        return memberResponseDto;
+        return memberDto;
+    }
+
+    @Transactional
+    public MemberDto updateScoolAuthenticated(String email, Boolean schoolAuthenticated) {
+        Optional<Member> byEmail = memberRepository.findByEmail(email);
+        if (byEmail.isPresent()) {
+            Member findMember = byEmail.get();
+            Member member = Member.builder()
+                    .email(findMember.getEmail())
+                    .password(findMember.getPassword())
+                    .githubAccessToken(findMember.getGithubAccessToken())
+                    .schoolAuthenticated(schoolAuthenticated)
+                    .build();
+            memberRepository.save(member);
+        }
+        throw new RuntimeException("학교 인증에 실패하였습니다.");
     }
 }

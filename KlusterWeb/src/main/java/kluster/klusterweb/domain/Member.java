@@ -6,7 +6,6 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Member {
@@ -16,10 +15,10 @@ public class Member {
     private String email;
     private String password;
     private String githubAccessToken;
-    private String schoolAuthenticated;
+    private Boolean schoolAuthenticated;
 
     @Builder
-    public Member(String email, String password, String githubAccessToken, String schoolAuthenticated){
+    public Member(String email, String password, String githubAccessToken, Boolean schoolAuthenticated){
         this.email = email;
         this.password = password;
         this.githubAccessToken = githubAccessToken;

@@ -11,5 +11,4 @@ public class KlusterWebApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(KlusterWebApplication.class, args);
 	}
-
 }
