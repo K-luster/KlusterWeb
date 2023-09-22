@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>학교 인증</title>
+</head>
+<body>
+<div class="container">
+    <div class="py-5 text-center">
+        <h2>학교 인증</h2>
+    </div>
+
+    <form action="/members/certify" method="post">
+        <label for="schoolEmail">이메일</label>
+        <input type="text" id="schoolEmail" name="schoolEmail">
+        <button type="submit">인증 코드 전송</button>
+    </form>
+    <p th:if="${message}" th:text="${message}"></p>
+</div>
+<div>
+    <div class="py-5 text-center">
+        <h2>학교 인증 코드 입력</h2>
+    </div>
+
+    <form action="/members/certifyCode" method="post">
+        <label for="email">이메일</label>
+        <input type="text" id="email" name="email">
+        <label for="code">코드 입력</label>
+        <input type="text" id="code" name="code">
+        <button type="submit">인증 확인</button>
+    </form>
+</div>
+
+</body>
+</html>

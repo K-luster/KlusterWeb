@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class JenkinsService {
+
     @Value("${jenkins.secret-key}")
     private String jenkinsKey;
 
