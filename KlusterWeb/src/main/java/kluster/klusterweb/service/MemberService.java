@@ -44,7 +44,7 @@ public class MemberService {
     }
 
     @Transactional
-    public MemberDto signUp(String email, String password, String githubName, String githubAccessToken, Boolean schoolAuthenticated) {
+    public MemberDto signUp(String email, String password, String githubName, String githubAccessToken, String dockerhubUsername, String dockerhubPassword, Boolean schoolAuthenticated) {
         Optional<Member> check = memberRepository.findByEmail(email);
         if (check.isPresent()) {
             throw new RuntimeException("이미 존재하는 이메일입니다");
@@ -54,14 +54,19 @@ public class MemberService {
                 .password(passwordEncoder.encode(password))
                 .githubName(githubName)
                 .githubAccessToken(githubAccessToken)
+                .dockerHubUsername(dockerhubUsername)
+                .dockerHubPassword(dockerhubPassword)
                 .schoolAuthenticated(schoolAuthenticated)
                 .build();
+
         memberRepository.save(member);
         MemberDto memberDto = MemberDto.builder()
                 .email(member.getEmail())
                 .password(member.getPassword())
                 .githubName(githubName)
                 .githubAccessToken(member.getGithubAccessToken())
+                .dockerHubUsername(member.getDockerHubUsername())
+                .dockerHubPassword(member.getDockerHubPassword())
                 .schoolAuthenticated(member.getSchoolAuthenticated())
                 .build();
         return memberDto;
