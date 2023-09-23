@@ -35,13 +35,15 @@ public class RestApiUtil {
 
     public static final String RESOURCE_TYPE_POD = "pods";
 
-    public ResponseEntity execute(HttpMethod httpMethod, String resourceType, String apiName) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    public ResponseEntity execute(HttpMethod httpMethod, String resourceType, String apiName, String githubName) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
         String url;
         if (apiName.equals("pod_list")){
-            url = API_SERVER + GET_POD_URL + API_NAMESPACE + "/" + resourceType;
+//            url = API_SERVER + GET_POD_URL + API_NAMESPACE + "/" + resourceType;
+            url = API_SERVER + GET_POD_URL + githubName + "/" + resourceType;
         }
         else{
-            url = API_SERVER + GET_POD_DETAIL_URL + API_NAMESPACE +"/"+resourceType;
+//            url = API_SERVER + GET_POD_DETAIL_URL + API_NAMESPACE +"/"+resourceType;
+            url = API_SERVER + GET_POD_DETAIL_URL + githubName + "/" + resourceType;
         }
 
         HttpHeaders headers = new HttpHeaders();
