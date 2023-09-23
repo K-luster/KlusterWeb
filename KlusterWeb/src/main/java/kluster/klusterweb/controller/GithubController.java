@@ -1,5 +1,8 @@
 package kluster.klusterweb.controller;
 
+import kluster.klusterweb.dto.CommitPushDto;
+import kluster.klusterweb.dto.GitHubRepository;
+import kluster.klusterweb.dto.GithubRepositoryDto;
 import kluster.klusterweb.dto.RepositoryDto;
 import kluster.klusterweb.service.GithubService;
 import kluster.klusterweb.service.JgitUtil;
@@ -15,9 +18,12 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 
-@Controller
+
+@RestController
+//@Controller
 @RequiredArgsConstructor
 @RequestMapping("/github")
 public class GithubController {
@@ -43,7 +49,9 @@ public class GithubController {
     }
 
     @GetMapping("/commit-and-push")
-    public String commitAndPush(){return "github/commitAndPush";}
+    public String commitAndPush() {
+        return "github/commitAndPush";
+    }
 
     @PostMapping("/create-repository")
     public ResponseEntity<String> createRepository(@ModelAttribute("repositoryRequest") RepositoryDto.RepositoryRequestDto request) {
@@ -52,21 +60,17 @@ public class GithubController {
     }
 
     @PostMapping("/commit-and-push")
-    public void commitAndPush(String repositoryName) throws Exception {
-        // githubService.commitAndPush(githubAccessToken, repositoryName);
-        File dir = new File("/Users/kimtaeheon/Desktop/test");
-        JgitUtil.checkOut(dir);
-        Git git = JgitUtil.open(dir);
-        JgitUtil.remoteAdd(git);
-        JgitUtil.pull(git);
-        JgitUtil.add(git, "404.md");
-        JgitUtil.rm(git, "ReadMe.md");
-        JgitUtil.commit(git, "8888");
-        JgitUtil.push(git);
+    public void commitAndPush(@RequestBody CommitPushDto commitPushDto) throws Exception {
+        githubService.commitAndPush(githubAccessToken, commitPushDto.getRepositoryName(), commitPushDto.getBranchName());
+    }
+
+    @PostMapping("/get-all-repository")
+    public List<GitHubRepository> getAllRepository(@RequestBody GithubRepositoryDto githubRepositoryDto) throws IOException {
+        return githubService.getAllRepository(githubAccessToken, githubRepositoryDto.getUsername());
     }
 
     @PostMapping("/delete-repository")
     public void deleteRepository(@ModelAttribute("repositoryRequest") RepositoryDto.RepositoryRequestDto request) {
-        githubService.deleteRepository(request.getGithubAccessToken(),request.getRepositoryName());
+        githubService.deleteRepository(request.getGithubAccessToken(), request.getRepositoryName());
     }
 }
