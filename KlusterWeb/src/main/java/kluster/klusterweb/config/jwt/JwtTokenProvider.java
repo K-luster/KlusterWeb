@@ -96,8 +96,21 @@ public class JwtTokenProvider {
         }
     }
 
-    public String getMemberId(String token) {
-        return Jwts.parserBuilder().setSigningKey(salt.getBytes()).build().parseClaimsJws(token).getBody().getSubject();
+    public String extractSubjectFromJwt(String accessToken) {
+        try {
+            String token = getToken(accessToken);
+            System.out.println("token = " + token);
+            Claims claims = Jwts.parser()
+                    .setSigningKey(key)
+                    .parseClaimsJws(token)
+                    .getBody();
+            System.out.println("claims = " + claims);
+            String subject = claims.getSubject();
+            System.out.println("subject = " + subject);
+            return subject.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // Bearer 제외부분
@@ -107,13 +120,5 @@ public class JwtTokenProvider {
         }
         token = token.substring(7).trim();
         return token;
-    }
-
-    public String getEmail(String token) {
-        return Jwts.parserBuilder().setSigningKey(salt.getBytes()).build().parseClaimsJws(token).getBody().getSubject();
-    }
-
-    public String resolveToken(HttpServletRequest request) {
-        return request.getHeader("Authorization");
     }
 }

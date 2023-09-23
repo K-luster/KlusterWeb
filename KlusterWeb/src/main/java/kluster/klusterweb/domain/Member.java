@@ -24,4 +24,8 @@ public class Member {
         this.githubAccessToken = githubAccessToken;
         this.schoolAuthenticated = schoolAuthenticated;
     }
+
+    public void updateSchoolAuthenticate() {
+        this.schoolAuthenticated = Boolean.TRUE;
+    }
 }

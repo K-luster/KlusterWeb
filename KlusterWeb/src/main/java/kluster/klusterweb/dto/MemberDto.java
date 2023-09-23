@@ -10,7 +10,6 @@ public class MemberDto {
     private String githubAccessToken;
     private Boolean schoolAuthenticated;
 
-
     @Builder
     public MemberDto(String email, String password, String githubAccessToken, Boolean schoolAuthenticated){
         this.email = email;

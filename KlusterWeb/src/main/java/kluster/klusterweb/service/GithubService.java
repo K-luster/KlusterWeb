@@ -1,40 +1,23 @@
 package kluster.klusterweb.service;
 
-import kluster.klusterweb.domain.GithubRepository;
+import kluster.klusterweb.config.jwt.JwtTokenProvider;
 import kluster.klusterweb.domain.Member;
 import kluster.klusterweb.dto.GitHubRepository;
 import kluster.klusterweb.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.RemoteAddCommand;
 import org.eclipse.jgit.api.errors.*;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.*;
-import java.net.http.HttpClient;
-import java.net.http.HttpResponse;
 import java.util.*;
 
 @Service
@@ -42,34 +25,19 @@ import java.util.*;
 public class GithubService {
 
     private static final String GITHUB_REPO_URL = "https://api.github.com/user/repos";
-    //private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
 
-    public static Git init(File dir) throws Exception {
-        return Git.init().setDirectory(dir).call();
+    public String getGithubAccessToken(String accessToken) {
+        String email = jwtTokenProvider.extractSubjectFromJwt(accessToken);
+        Optional<Member> member = memberRepository.findByEmail(email);
+        if (member.isPresent()) {
+            Member findMember = member.get();
+            return findMember.getGithubAccessToken();
+        } else {
+            throw new RuntimeException("존재하지 않는 이메일입니다.");
+        }
     }
-
-    // jwt 토큰으로 github 토큰 찾기
-//    public String getGithubAccessToken(HttpServletRequest request) {
-//        String token = jwtTokenProvider.resolveToken(request);
-//        token = jwtTokenProvider.getToken(token);
-//        String email = jwtTokenProvider.getEmail(token);
-//        Optional<Member> member = memberRepository.findByEmail(email);
-//        if (member.isPresent()) {
-//            Member findMember = member.get();
-//            return findMember.getGithubAccessToken();
-//        } else {
-//            throw new RuntimeException("존재하지 않는 이메일입니다.");
-//        }
-//    }
-
-    // jwt 토큰 반환
-//    public String getAccessToken(HttpServletRequest request) {
-//        String token = jwtTokenProvider.resolveToken(request);
-//        token = jwtTokenProvider.getToken(token);
-//        return token;
-//    }
-
 
     public ResponseEntity<String> createRepository(String githubToken, String repositoryName) {
         RestTemplate restTemplate = new RestTemplate();
