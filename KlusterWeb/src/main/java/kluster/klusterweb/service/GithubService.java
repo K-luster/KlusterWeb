@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -28,21 +29,21 @@ public class GithubService {
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
 
-    public String getGithubAccessToken(String accessToken) {
-        String email = jwtTokenProvider.extractSubjectFromJwt(accessToken);
+    public String getGithubAccessToken(String jwtToken) {
+        String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
         Optional<Member> member = memberRepository.findByEmail(email);
         if (member.isPresent()) {
             Member findMember = member.get();
             return findMember.getGithubAccessToken();
-        } else {
-            throw new RuntimeException("존재하지 않는 이메일입니다.");
         }
+        throw new RuntimeException("존재하지 않는 이메일입니다.");
     }
 
-    public ResponseEntity<String> createRepository(String githubToken, String repositoryName) {
+    public ResponseEntity<String> createRepository(String jwtToken, String repositoryName) {
+        String githubAccessToken = getGithubAccessToken(jwtToken);
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "token " + githubToken);
+        headers.set("Authorization", "token " + githubAccessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
         String jsonBody = "{\"name\":\"" + repositoryName + "\"}";
         HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody, headers);
@@ -50,49 +51,44 @@ public class GithubService {
         return responseEntity;
     }
 
-    public void commitAndPush(String githubAccessToken, String repositoryName, String branchName) throws Exception {
-        String localRepositoryPath = "/Users/kimtaeheon/Documents/GitHub/githubActionTest/githubActionTest";
-        String githubUsername = "Jake-huen";
-        String dockerfileContent = "FROM openjdk:11\n" +
+    public void commitAndPush(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) throws Exception {
+        String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
+        String githubUsername = member.getGithubName();
+        String githubAccessToken = getGithubAccessToken(jwtToken);
+        // String localRepositoryPath = "/Users/kimtaeheon/Documents/GitHub/githubActionTest/githubActionTest";
+
+        String javaDockerfileContent = "FROM openjdk:11\n" +
                 "ARG JAR_FILE=build/libs/*.jar\n" +
                 "COPY ${JAR_FILE} app.jar\n" +
                 "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]\n" +
                 "\n";
+
         String dockerfilePath = localRepositoryPath + "/Dockerfile";
         String commitMessage = "Add Dockerfile";
 
         try {
-            // Dockerfile 생성
             FileWriter writer = new FileWriter(dockerfilePath);
-            writer.write(dockerfileContent);
+            writer.write(javaDockerfileContent);
             writer.close();
-
-            // 로컬 Git 레포지토리 열기
             Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
-
-            // Git 객체 생성
             Git git = new Git(repository);
-
-            // 파일을 스테이징하고 커밋
             git.add().addFilepattern(".").call();
             git.commit().setMessage(commitMessage).call();
-
-            // 푸시
             CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
             PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
             pushCommand.call();
 
-            System.out.println("Dockerfile committed and pushed successfully.");
+            System.out.println("java Dockerfile 커밋 푸쉬 성공");
         } catch (IOException | GitAPIException e) {
             e.printStackTrace();
         }
 
-        commitAndPushGithubAction(githubAccessToken);
+        // github Action 커밋 푸쉬하기
+        commitAndPushGithubAction(localRepositoryPath, githubAccessToken, githubUsername);
     }
 
-    public void commitAndPushGithubAction(String githubAccessToken) {
-        String localRepositoryPath = "/Users/kimtaeheon/Documents/GitHub/githubActionTest/githubActionTest";
-        String githubUsername = "Jake-huen";
+    public void commitAndPushGithubAction(String localRepositoryPath, String githubAccessToken, String githubUsername) {
         String actionContent = "name: CI with gradle\n" +
                 "\n" +
                 "on:\n" +
@@ -184,7 +180,7 @@ public class GithubService {
         }
     }
 
-    public void deleteRepository(String githubToken, String repositoryName){
+    public void deleteRepository(String githubToken, String repositoryName) {
         String apiUrl = GITHUB_REPO_URL + "jake-huen/" + repositoryName;
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();

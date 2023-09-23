@@ -12,7 +12,6 @@ public class RepositoryDto {
     @NoArgsConstructor
     @Builder
     public static class RepositoryRequestDto {
-        private String githubAccessToken;
         private String repositoryName;
     }
 
