@@ -16,11 +16,16 @@ import static kluster.klusterweb.util.RestApiUtil.RESOURCE_TYPE_POD;
 public class ApiController {
 
     private final ApiService apiService;
-
-    @GetMapping("/pod")
+    private static String apiName;
+    @GetMapping("/pod_list")
     public List getPods(){
-        return apiService.getResource(RESOURCE_TYPE_POD);
+        apiName = "pod_list";
+        return apiService.getPodResource(RESOURCE_TYPE_POD, apiName);
     }
 
-
+    @GetMapping("/pod_detail")
+    public List getPodsDetail(){
+        apiName = "pod_detail";
+        return apiService.getPodResource(RESOURCE_TYPE_POD, apiName);
+    }
 }

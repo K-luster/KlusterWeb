@@ -30,12 +30,19 @@ public class RestApiUtil {
 
     private final RestTemplate restTemplateEKS;
 
-    private final String API_URL = "/api/v1/namespaces/";
+    private final String GET_POD_URL = "/api/v1/namespaces/";
+    private final String GET_POD_DETAIL_URL = "/apis/metrics.k8s.io/v1beta1/namespaces/";
 
     public static final String RESOURCE_TYPE_POD = "pods";
 
-    public ResponseEntity execute(HttpMethod httpMethod, String resourceType) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-        String url = API_SERVER + API_URL + API_NAMESPACE +"/"+resourceType;
+    public ResponseEntity execute(HttpMethod httpMethod, String resourceType, String apiName) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        String url;
+        if (apiName.equals("pod_list")){
+            url = API_SERVER + GET_POD_URL + API_NAMESPACE + "/" + resourceType;
+        }
+        else{
+            url = API_SERVER + GET_POD_DETAIL_URL + API_NAMESPACE +"/"+resourceType;
+        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(API_TOKEN);
@@ -45,5 +52,4 @@ public class RestApiUtil {
 
         return restTemplateEKS.exchange(url, httpMethod, httpEntity, Map.class);
     }
-
 }
