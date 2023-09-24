@@ -1,8 +1,11 @@
 package kluster.klusterweb.service;
 
+import kluster.klusterweb.config.jwt.JwtTokenProvider;
+import kluster.klusterweb.domain.Member;
 import kluster.klusterweb.dto.ContainerDto;
 import kluster.klusterweb.dto.PodDetailDto;
 import kluster.klusterweb.dto.PodDto;
+import kluster.klusterweb.repository.MemberRepository;
 import kluster.klusterweb.util.RestApiUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,10 +25,21 @@ import java.util.stream.Collectors;
 public class ApiService {
 
     private final RestApiUtil restApiUtil;
-    public List getPodResource(String resourceType, String apiName) {
-
+    private final JwtTokenProvider jwtTokenProvider;
+    private final MemberRepository memberRepository;
+    public String getGithubName(String jwtToken) {
+        String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
+        Optional<Member> member = memberRepository.findByEmail(email);
+        if (member.isPresent()) {
+            Member findMember = member.get();
+            return findMember.getGithubName();
+        }
+        throw new RuntimeException("존재하지 않는 이메일입니다.");
+    }
+    public List getPodResource(String jwtToken, String resourceType, String apiName) {
+        String githubName = getGithubName(jwtToken);
         try {
-            ResponseEntity e = restApiUtil.execute(HttpMethod.GET, resourceType, apiName);
+            ResponseEntity e = restApiUtil.execute(HttpMethod.GET, resourceType, apiName, githubName);
             if (apiName.equals("pod_list"))
             {
                 String statusCode = String.valueOf(e.getStatusCode());
