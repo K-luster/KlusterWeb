@@ -34,10 +34,10 @@ public class SecurityConfig {
                 .httpBasic().disable()
                 .formLogin().disable()
                 .authorizeRequests()
-                .anyRequest().permitAll() //.anyRequest().authenticated() -> 나중에 jwt 인증 필요한 것들 다 인증해주기.
-                .and()
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling();
+                .anyRequest().permitAll(); //.anyRequest().authenticated() -> 나중에 jwt 인증 필요한 것들 다 인증해주기.
+//                .and()
+//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+//                .exceptionHandling();
         return http.build();
     }
 

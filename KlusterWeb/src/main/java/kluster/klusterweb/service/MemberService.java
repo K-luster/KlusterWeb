@@ -2,6 +2,8 @@ package kluster.klusterweb.service;
 
 import com.univcert.api.UnivCert;
 import kluster.klusterweb.config.jwt.JwtTokenProvider;
+import kluster.klusterweb.config.response.ResponseDto;
+import kluster.klusterweb.config.response.ResponseUtil;
 import kluster.klusterweb.domain.Member;
 import kluster.klusterweb.dto.*;
 import kluster.klusterweb.repository.MemberRepository;
@@ -33,7 +35,7 @@ public class MemberService {
     public LoginDto.Response login(String email, String password) {
         Optional<Member> member = memberRepository.findByEmail(email);
         if (member.isPresent()) {
-            if(passwordEncoder.matches(password,member.get().getPassword())){
+            if (passwordEncoder.matches(password, member.get().getPassword())) {
                 JwtTokenInfo tokenInfo = jwtTokenProvider.generateToken(member.get());
                 LoginDto.Response loginResponseDTO = new LoginDto.Response(email, tokenInfo.getGrantType(), tokenInfo.getAccessToken());
                 return loginResponseDTO;
@@ -82,17 +84,18 @@ public class MemberService {
         return email;
     }
 
-    public SchoolDto.ResponseSuccess schoolEmailCheck(String email, int code) throws IOException {
+    public ResponseDto schoolEmailCheck(String email, int code) throws IOException {
         Map<String, Object> objectMap = UnivCert.certifyCode(univCertApiKey, email, SCHOOL_NAME, code);
-        if(objectMap.get("success").toString().equals("false")){
+        if (objectMap.get("success").toString().equals("false")) {
             String message = objectMap.get("message").toString();
-            throw new RuntimeException(message);
+            // throw new RuntimeException(message);
+            return ResponseUtil.FAILURE("학교 인증에 실패했습니다.", message);
         }
-        return SchoolDto.ResponseSuccess.builder()
+        return ResponseUtil.SUCCESS("학교 인증이 완료되었습니다.", SchoolDto.ResponseSuccess.builder()
                 .univName(objectMap.get("univName").toString())
                 .certified_email(objectMap.get("certified_email").toString())
                 .certified_date(objectMap.get("certified_date").toString())
-                .build();
+                .build());
     }
 
     public String schoolEmailReset(String email) throws IOException {

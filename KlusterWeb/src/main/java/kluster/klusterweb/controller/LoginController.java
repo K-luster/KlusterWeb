@@ -13,6 +13,7 @@ import java.io.IOException;
 
 @Slf4j
 @RestController
+@CrossOrigin(allowedHeaders = "*")
 @RequiredArgsConstructor
 @RequestMapping("/members")
 public class LoginController {
@@ -36,7 +37,7 @@ public class LoginController {
 
     @PostMapping("/school-email-check")
     public ResponseDto schoolEmailCheck(@RequestBody SchoolDto.codeCheck codeCheck) throws IOException {
-        return ResponseUtil.SUCCESS("학교 인증이 완료되었습니다.", memberService.schoolEmailCheck(codeCheck.getEmail(), codeCheck.getCode()));
+        return memberService.schoolEmailCheck(codeCheck.getEmail(), codeCheck.getCode());
     }
 
     @PostMapping("/school-email-resend")

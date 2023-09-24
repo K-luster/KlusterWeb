@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.*;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryBuilder;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONArray;
@@ -39,8 +41,9 @@ public class GithubService {
         throw new RuntimeException("존재하지 않는 이메일입니다.");
     }
 
-    public ResponseEntity<String> createRepository(String jwtToken, String repositoryName) {
+    public String createRepository(String jwtToken, String repositoryName) {
         String githubAccessToken = getGithubAccessToken(jwtToken);
+
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "token " + githubAccessToken);
@@ -48,21 +51,22 @@ public class GithubService {
         String jsonBody = "{\"name\":\"" + repositoryName + "\"}";
         HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody, headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(GITHUB_REPO_URL, HttpMethod.POST, requestEntity, String.class);
-        return responseEntity;
+        return responseEntity.getBody().toString();
     }
 
-    public void commitAndPush(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) throws Exception {
+    public String buildDockerAndGithubAction(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) throws Exception {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
         String githubUsername = member.getGithubName();
         String githubAccessToken = getGithubAccessToken(jwtToken);
-        // String localRepositoryPath = "/Users/kimtaeheon/Documents/GitHub/githubActionTest/githubActionTest";
+        String dockerhubUsername = member.getDockerHubUsername();
+        String dockerhubPassword = member.getDockerHubPassword();
 
-        String javaDockerfileContent = "FROM openjdk:11\n" +
-                "ARG JAR_FILE=build/libs/*.jar\n" +
+        String javaDockerfileContent = String.format("FROM openjdk:11\n" +
+                "ARG JAR_FILE=*.jar\n" +
                 "COPY ${JAR_FILE} app.jar\n" +
                 "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]\n" +
-                "\n";
+                "\n");
 
         String dockerfilePath = localRepositoryPath + "/Dockerfile";
         String commitMessage = "Add Dockerfile";
@@ -84,17 +88,41 @@ public class GithubService {
             e.printStackTrace();
         }
 
-        // github Action 커밋 푸쉬하기
-        commitAndPushGithubAction(localRepositoryPath, githubAccessToken, githubUsername);
+        createDevelopBranch(localRepositoryPath, branchName);
+        commitAndPushGithubAction(localRepositoryPath, branchName, githubAccessToken, githubUsername, dockerhubUsername, dockerhubPassword, repositoryName);
+        return "CI 성공";
     }
 
-    public void commitAndPushGithubAction(String localRepositoryPath, String githubAccessToken, String githubUsername) {
-        String actionContent = "name: CI with gradle\n" +
+    public void createDevelopBranch(String localRepositoryPath, String branchName){
+        File repositoryDirectory = new File(localRepositoryPath);
+
+        String startPoint = "main"; // 새 브랜치의 시작 지점
+
+        try {
+            Git git = Git.open(repositoryDirectory);
+
+            Ref branchRef = git.branchCreate()
+                    .setName(branchName)
+                    .setStartPoint(startPoint)
+                    .call();
+
+            System.out.println("새로운 브랜치가 생성되었습니다:");
+            System.out.println("브랜치 이름: " + branchRef.getName());
+
+            git.close();
+        } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void commitAndPushGithubAction(String localRepositoryPath, String branchName, String githubAccessToken, String githubUsername, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
+        String actionContent = String.format("\n" +
+                "name: CI with Gradle\n" +
                 "\n" +
                 "on:\n" +
                 "  push:\n" +
                 "    branches:\n" +
-                "      - main\n" +
+                "      - %s\n" +
                 "\n" +
                 "permissions:\n" +
                 "  contents: read\n" +
@@ -107,25 +135,6 @@ public class GithubService {
                 "    steps:\n" +
                 "    - uses: actions/checkout@v3\n" +
                 "\n" +
-                "    - name: Grant execute permission for gradlew and build\n" +
-                "      run: |\n" +
-                "        chmod +x gradlew\n" +
-                "        ./gradlew build\n" +
-                "      \n" +
-                "    - name: Set up JDK 11\n" +
-                "      uses: actions/setup-java@v3\n" +
-                "      with:\n" +
-                "        java-version: '11'\n" +
-                "        distribution: 'temurin'\n" +
-                "        \n" +
-                "    - name: init with Gradle\n" +
-                "      uses: gradle/gradle-build-action@v2\n" +
-                "\n" +
-                "    - name: Build with Gradle\n" +
-                "      run: |\n" +
-                "        chmod +x ./gradlew\n" +
-                "        ./gradlew clean build\n" +
-                "\n" +
                 "    - name: Set up Docker Buildx\n" +
                 "      uses: docker/setup-buildx-action@v1\n" +
                 "      with:\n" +
@@ -133,50 +142,52 @@ public class GithubService {
                 "\n" +
                 "    - name: Docker build & push to docker repo\n" +
                 "      run: |\n" +
-                "          docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}\n" +
-                "          docker build -t jakeheon/githubaction -f Dockerfile .\n" +
-                "          docker push jakeheon/githubaction\n" +
-                "\n" +
-                "    - name: Build and deploy\n" +
-                "      uses: appleboy/ssh-action@master\n" +
-                "      id: deploy\n" +
-                "      with:\n" +
-                "        host: ${{ secrets.HOST }}\n" +
-                "        username: ubuntu\n" +
-                "        key: ${{ secrets.KEY }}\n" +
-                "        envs: GITHUB_SHA\n" +
-                "        script: |\n" +
-                "          sudo docker stop $(sudo docker ps -aq)\n" +
-                "          sudo docker rm -f $(docker ps -qa)\n" +
-                "          sudo docker pull jakeheon/githubaction\n" +
-                "          sudo docker run -it -d -p 80:8080 jakeheon/githubaction";
-        String githubActionfilePath = localRepositoryPath + "/.github/workflows/CI.yml";
-        String commitMessage = "Add githubActionFile";
+                "          docker login -u %s -p %s\n" +
+                "          docker build -t %s/%s -f Dockerfile .\n" +
+                "          docker push %s/%s\n" +
+                "\n", branchName, dockerhubUsername, dockerhubPassword, dockerhubUsername, repositoryName, dockerhubUsername, repositoryName);
 
-        try {
-            // githubAction 파일 생성
-            FileWriter writer = new FileWriter(githubActionfilePath);
-            writer.write(actionContent);
-            writer.close();
+        String directoryPath = localRepositoryPath + "/.github/workflows"; // 디렉터리 경로 지정
+        String filePath = directoryPath + "/myworkflow.yaml"; // 파일 경로 지정
 
-            // 로컬 Git 레포지토리 열기
-            Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
+        File directory = new File(directoryPath);
 
-            // Git 객체 생성
-            Git git = new Git(repository);
+        // 디렉터리가 존재하지 않으면 생성
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
+                System.out.println("디렉터리가 생성되었습니다.");
+            } else {
+                System.err.println("디렉터리 생성에 실패했습니다.");
+                return;
+            }
+        }
 
-            // 파일을 스테이징하고 커밋
-            git.add().addFilepattern(".").call();
-            git.commit().setMessage(commitMessage).call();
+        File file = new File(filePath);
 
-            // 푸시
-            CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
-            PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
-            pushCommand.call();
-
-            System.out.println("Dockerfile committed and pushed successfully.");
-        } catch (IOException | GitAPIException e) {
-            e.printStackTrace();
+        // 파일이 존재하지 않으면 생성
+        if (!file.exists()) {
+            try {
+                if (file.createNewFile()) {
+                    FileWriter writer = new FileWriter(file);
+                    writer.write(actionContent);
+                    writer.close();
+                    String commitMessage = "Add githubActionFile";
+                    Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
+                    Git git = new Git(repository);
+                    git.add().addFilepattern(".").call();
+                    git.commit().setMessage(commitMessage).call();
+                    CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
+                    PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
+                    pushCommand.call();
+                    System.out.println("파일이 생성되었습니다.");
+                } else {
+                    System.err.println("파일 생성에 실패했습니다.");
+                }
+            } catch (IOException | GitAPIException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("파일이 이미 존재합니다.");
         }
     }
 
@@ -196,18 +207,13 @@ public class GithubService {
     }
 
 
-    public List<GitHubRepository> getAllRepository(String githubAccessToken, String username) throws RuntimeException, IOException {
+    public List<GitHubRepository> getAllRepository(String jwtToken, String username) throws RuntimeException, IOException {
+        String githubAccessToken = getGithubAccessToken(jwtToken);
         String apiUrl = "https://api.github.com/users/" + username + "/repos";
-
-        // API 요청을 보내기 위한 URL 생성
         URL url = new URL(apiUrl);
-
-        // HttpURLConnection을 사용하여 API 요청 설정
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Authorization", "token " + githubAccessToken);
-
-        // API 응답을 읽기 위한 BufferedReader 설정
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder jsonResponse = new StringBuilder();
         String line;
@@ -227,5 +233,90 @@ public class GithubService {
         reader.close();
         connection.disconnect();
         return repositories;
+    }
+
+    public String deploy(String jwtToken, String localRepositoryPath, String repositoryName, String serviceName, String replicaCount) {
+        String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
+        String githubUsername = member.getGithubName();
+        String githubAccessToken = getGithubAccessToken(jwtToken);
+        String dockerhubUsername = member.getDockerHubUsername();
+        String dockerhubPassword = member.getDockerHubPassword();
+        String deploymentYmlContent = String.format("apiVersion: apps/v1\n" +
+                "kind: Deployment\n" +
+                "metadata:\n" +
+                "  name: %s\n" +
+                "spec:\n" +
+                "  selector:\n" +
+                "    matchLabels:\n" +
+                "      app: %s\n" +
+                "  replicas: %s\n" +
+                "  template:\n" +
+                "    metadata:\n" +
+                "      labels:\n" +
+                "        app: %s\n" +
+                "    spec:\n" +
+                "      containers:\n" +
+                "        - name: core\n" +
+                "          image: %s/%s\n" +
+                "          imagePullPolicy: Always\n" +
+                "          ports:\n" +
+                "            - containerPort: 8080\n" +
+                "              protocol: TCP\n" +
+                "          resources:\n" +
+                "            requests:\n" +
+                "              cpu: 500m\n" +
+                "              memory: 1000Mi", serviceName, serviceName, serviceName, githubUsername, replicaCount);
+
+        String serviceYmlContent = String.format("apiVersion: v1\n" +
+                "kind: Service\n" +
+                "metadata:\n" +
+                "  name: %s\n" +
+                "spec:\n" +
+                "  type: NodePort\n" +
+                "  ports:\n" +
+                "    - port: 80\n" +
+                "      protocol: TCP\n" +
+                "      targetPort: 8080\n" +
+                "  selector:\n" +
+                "    app: %s", serviceName, serviceName);
+        try {
+            // Git 저장소 초기화
+            Repository localRepo = new RepositoryBuilder().setGitDir(new File(localRepositoryPath + "/.git")).build();
+            Git git = new Git(localRepo);
+
+            // YAML 파일 생성 및 내용 작성
+            File deploymentyamlFile = new File(localRepositoryPath + "/deployment.yml");
+            try (FileWriter writer = new FileWriter(deploymentyamlFile)) {
+                writer.write(deploymentYmlContent);
+            }
+
+            // YAML 파일 스테이징 및 커밋
+            git.add().addFilepattern("deployment.yaml").call();
+            git.commit().setMessage("Add deployment.yaml").call();
+
+            CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
+            PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
+            pushCommand.call();
+
+            System.out.println("YAML deployment 파일 커밋 및 푸시 완료.");
+
+            File serviceyamlFile = new File(localRepositoryPath + "/service.yml");
+            try (FileWriter writer = new FileWriter(serviceyamlFile)) {
+                writer.write(serviceYmlContent);
+            }
+
+            // YAML 파일 스테이징 및 커밋
+            git.add().addFilepattern("service.yaml").call();
+            git.commit().setMessage("Add service.yaml").call();
+
+            pushCommand.call();
+
+
+            System.out.println("YAML service 파일 커밋 및 푸시 완료.");
+        } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

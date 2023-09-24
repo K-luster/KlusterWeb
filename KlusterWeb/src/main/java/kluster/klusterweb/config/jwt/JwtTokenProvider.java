@@ -84,7 +84,6 @@ public class JwtTokenProvider {
             System.out.println("e = " + e);
             throw new RuntimeException(e);
         }
-
     }
 
     private Claims parseClaims(String accessToken) {
