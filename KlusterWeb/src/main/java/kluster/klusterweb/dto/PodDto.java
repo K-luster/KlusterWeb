@@ -1,15 +1,9 @@
 package kluster.klusterweb.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 public class PodDto {
-
     private String name;
     private String status;
     private String namespace;
