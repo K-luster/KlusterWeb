@@ -1,10 +1,13 @@
 package kluster.klusterweb.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kluster.klusterweb.config.jwt.JwtTokenProvider;
 import kluster.klusterweb.domain.Member;
 import kluster.klusterweb.dto.GitHubRepository;
 import kluster.klusterweb.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.*;
@@ -25,9 +28,11 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class GithubService {
 
     private static final String GITHUB_REPO_URL = "https://api.github.com/user/repos";
+    private final String GITHUB_API_URL = "https://api.github.com/user";
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
 
@@ -41,6 +46,46 @@ public class GithubService {
         throw new RuntimeException("존재하지 않는 이메일입니다.");
     }
 
+
+    public String getUserIdFromAccessToken(String accessToken) {
+//        JSONObject jsonObject = new JSONObject(body);
+
+        // "githubToken" 키로부터 "access token" 값 추출
+//        String accessToken = jsonObject.getString("githubToken");
+        RestTemplate restTemplate = new RestTemplate();
+
+        // GitHub API 호출을 위한 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // GitHub API 호출 및 응답 받기
+//        String response = restTemplate.getForObject(GITHUB_API_URL, String.class);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
+                GITHUB_API_URL,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                String.class
+        );
+        if (responseEntity.getStatusCode() == HttpStatus.OK) {
+            String response = responseEntity.getBody();
+            return extractUserIdFromResponse(response);
+        } else {
+            // 오류 처리
+            return null;
+        }
+    }
+
+    private String extractUserIdFromResponse(String response) {
+         ObjectMapper objectMapper = new ObjectMapper();
+         try {
+             Map<String, Object> info = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
+             return info.get("login").toString();
+         } catch (IOException e) {
+             e.printStackTrace();
+             return null;
+         }
+    }
     public String createRepository(String jwtToken, String repositoryName) {
         String githubAccessToken = getGithubAccessToken(jwtToken);
 
