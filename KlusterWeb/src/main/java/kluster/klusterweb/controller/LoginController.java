@@ -42,6 +42,6 @@ public class LoginController {
 
     @PostMapping("/school-email-resend")
     public ResponseDto schoolEmailResend(@RequestBody SchoolDto.codeCheck codeCheck) throws IOException {
-        return ResponseUtil.SUCCESS("학교 인증 메일이 재전송되었습니다", memberService.schoolEmailReset(codeCheck.getEmail()));
+        return ResponseUtil.SUCCESS("학교 인증 메일이 전송되었습니다", memberService.schoolEmailReset(codeCheck.getEmail()));
     }
 }

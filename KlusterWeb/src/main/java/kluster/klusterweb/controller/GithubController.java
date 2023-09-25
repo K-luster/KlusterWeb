@@ -47,8 +47,8 @@ public class GithubController {
     }
 
     @PostMapping("/get-all-repository")
-    public List<GitHubRepository> getAllRepository(HttpServletRequest request, @RequestBody GithubRepositoryDto githubRepositoryDto) throws IOException {
-        return githubService.getAllRepository(request.getHeader("Authorization"), githubRepositoryDto.getUsername());
+    public List<GitHubRepository> getAllRepository(HttpServletRequest request) throws IOException {
+        return githubService.getAllRepository(request.getHeader("Authorization"));
     }
 
     @PostMapping("/delete-repository")

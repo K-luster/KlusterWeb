@@ -98,6 +98,8 @@ public class GithubService {
         String dockerhubUsername = member.getDockerHubUsername();
         String dockerhubPassword = member.getDockerHubPassword();
 
+        createDevelopBranch(localRepositoryPath, branchName);
+
         String javaDockerfileContent = String.format("FROM openjdk:11\n" +
                 "ARG JAR_FILE=*.jar\n" +
                 "COPY ${JAR_FILE} app.jar\n" +
@@ -113,6 +115,9 @@ public class GithubService {
             writer.close();
             Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
             Git git = new Git(repository);
+            git.checkout()
+                    .setName("develop") // 푸시할 브랜치 이름을 지정
+                    .call();
             git.add().addFilepattern(".").call();
             git.commit().setMessage(commitMessage).call();
             CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
@@ -124,7 +129,6 @@ public class GithubService {
             e.printStackTrace();
         }
 
-        createDevelopBranch(localRepositoryPath, branchName);
         commitAndPushGithubAction(localRepositoryPath, branchName, githubAccessToken, githubUsername, dockerhubUsername, dockerhubPassword, repositoryName);
         return "CI 성공";
     }
@@ -141,7 +145,9 @@ public class GithubService {
                     .setName(branchName)
                     .setStartPoint(startPoint)
                     .call();
-
+            git.checkout()
+                    .setName("develop") // 브랜치 이름 지정
+                    .call();
             System.out.println("새로운 브랜치가 생성되었습니다:");
             System.out.println("브랜치 이름: " + branchRef.getName());
 
@@ -210,6 +216,9 @@ public class GithubService {
                     String commitMessage = "Add githubActionFile";
                     Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
                     Git git = new Git(repository);
+                    git.checkout()
+                            .setName("develop") // 푸시할 브랜치 이름을 지정
+                            .call();
                     git.add().addFilepattern(".").call();
                     git.commit().setMessage(commitMessage).call();
                     CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
@@ -243,13 +252,14 @@ public class GithubService {
     }
 
 
-    public List<GitHubRepository> getAllRepository(String jwtToken, String username) throws RuntimeException, IOException {
-        String githubAccessToken = getGithubAccessToken(jwtToken);
-        String apiUrl = "https://api.github.com/users/" + username + "/repos";
+    public List<GitHubRepository> getAllRepository(String jwtToken) throws RuntimeException, IOException {
+        String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
+        String apiUrl = "https://api.github.com/users/" + member.getGithubName() + "/repos";
         URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
-        connection.setRequestProperty("Authorization", "token " + githubAccessToken);
+        connection.setRequestProperty("Authorization", "token " + member.getGithubAccessToken());
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder jsonResponse = new StringBuilder();
         String line;
@@ -278,6 +288,13 @@ public class GithubService {
         String githubAccessToken = getGithubAccessToken(jwtToken);
         String dockerhubUsername = member.getDockerHubUsername();
         String dockerhubPassword = member.getDockerHubPassword();
+        commitAndPushDeploymentYml(localRepositoryPath, githubUsername, githubAccessToken, serviceName, replicaCount, dockerhubUsername);
+        commitAndPushServiceYml(localRepositoryPath, githubUsername, githubAccessToken, serviceName);
+        commitAndPushHpaTestYml(localRepositoryPath, githubUsername, githubAccessToken, serviceName);
+        return null;
+    }
+
+    private void commitAndPushDeploymentYml(String localRepositoryPath, String githubUsername, String githubAccessToken, String serviceName, String replicaCount, String dockerhubUsername) {
         String deploymentYmlContent = String.format("apiVersion: apps/v1\n" +
                 "kind: Deployment\n" +
                 "metadata:\n" +
@@ -302,8 +319,56 @@ public class GithubService {
                 "          resources:\n" +
                 "            requests:\n" +
                 "              cpu: 500m\n" +
-                "              memory: 1000Mi", serviceName, serviceName, serviceName, githubUsername, replicaCount);
+                "              memory: 1000Mi", serviceName, serviceName, replicaCount, serviceName, dockerhubUsername, serviceName);
+        String directoryPath = localRepositoryPath; // 디렉터리 경로 지정
 
+        String filePath = directoryPath + "/deployment.yml"; // 파일 경로 지정
+
+        File directory = new File(directoryPath);
+
+        // 디렉터리가 존재하지 않으면 생성
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
+                System.out.println("디렉터리가 생성되었습니다.");
+            } else {
+                System.err.println("디렉터리 생성에 실패했습니다.");
+                return;
+            }
+        }
+
+        File file = new File(filePath);
+
+        // 파일이 존재하지 않으면 생성
+        if (!file.exists()) {
+            try {
+                if (file.createNewFile()) {
+                    FileWriter writer = new FileWriter(file);
+                    writer.write(deploymentYmlContent);
+                    writer.close();
+                    String commitMessage = "Add deploymentYmlContent";
+                    Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
+                    Git git = new Git(repository);
+                    git.checkout()
+                            .setName("develop") // 푸시할 브랜치 이름을 지정
+                            .call();
+                    git.add().addFilepattern(".").call();
+                    git.commit().setMessage(commitMessage).call();
+                    CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
+                    PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
+                    pushCommand.call();
+                    System.out.println("파일이 생성되었습니다.");
+                } else {
+                    System.err.println("파일 생성에 실패했습니다.");
+                }
+            } catch (IOException | GitAPIException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("파일이 이미 존재합니다.");
+        }
+    }
+
+    private void commitAndPushServiceYml(String localRepositoryPath, String githubUsername, String githubAccessToken, String serviceName) {
         String serviceYmlContent = String.format("apiVersion: v1\n" +
                 "kind: Service\n" +
                 "metadata:\n" +
@@ -316,57 +381,116 @@ public class GithubService {
                 "      targetPort: 8080\n" +
                 "  selector:\n" +
                 "    app: %s", serviceName, serviceName);
-        try {
-            Repository localRepo = new RepositoryBuilder().setGitDir(new File(localRepositoryPath + "/.git")).build();
-            Git git = new Git(localRepo);
+        String directoryPath = localRepositoryPath; // 디렉터리 경로 지정
 
-            File deploymentyamlFile = new File(localRepositoryPath + "/deployment.yml");
-            try (FileWriter writer = new FileWriter(deploymentyamlFile)) {
-                writer.write(deploymentYmlContent);
+        String filePath = directoryPath + "/service.yml"; // 파일 경로 지정
+
+        File directory = new File(directoryPath);
+
+        // 디렉터리가 존재하지 않으면 생성
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
+                System.out.println("디렉터리가 생성되었습니다.");
+            } else {
+                System.err.println("디렉터리 생성에 실패했습니다.");
+                return;
             }
-
-            git.add().addFilepattern("deployment.yaml").call();
-            git.commit().setMessage("Add deployment.yaml").call();
-
-            CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
-            PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
-            pushCommand.call();
-
-            System.out.println("YAML deployment 파일 커밋 및 푸시 완료.");
-
-            File serviceyamlFile = new File(localRepositoryPath + "/service.yml");
-            try (FileWriter writer = new FileWriter(serviceyamlFile)) {
-                writer.write(serviceYmlContent);
-            }
-
-            git.add().addFilepattern("service.yaml").call();
-            git.commit().setMessage("Add service.yaml").call();
-
-            pushCommand.call();
-
-
-            System.out.println("YAML service 파일 커밋 및 푸시 완료.");
-
-            String hpaTest = String.format("apiVersion: autoscaling/v2beta1\n" +
-                    "kind: HorizontalPodAutoscaler\n" +
-                    "metadata:\n" +
-                    "  name: %s\n" +
-                    "spec:\n" +
-                    "  minReplicas: 1  # 최소 replicas 개수\n" +
-                    "  maxReplicas: 5  # 최대 replicas 개수\n" +
-                    "  metrics:\n" +
-                    "  - resource:\n" +
-                    "      name: cpu  # HPA를 구성할 리소스(CPU, MEM 등)\n" +
-                    "      targetAverageUtilization: 10  # CPU 사용률이 10% 이상일 경우 생성\n" +
-                    "    type: Resource  # 리소스 타입 선언\n" +
-                    "  scaleTargetRef:  # 스케일 아웃할 타겟 설정\n" +
-                    "    apiVersion: apps/v1\n" +
-                    "    kind: Deployment  #  스케일 아웃할 타겟의 종류 (deployment, replicaset 등)\n" +
-                    "    name: devops-spring-deployment  #  스케일 아웃할 타겟의 네임\n", serviceName);
-            
-        } catch (IOException | GitAPIException e) {
-            e.printStackTrace();
         }
-        return null;
+
+        File file = new File(filePath);
+
+        // 파일이 존재하지 않으면 생성
+        if (!file.exists()) {
+            try {
+                if (file.createNewFile()) {
+                    FileWriter writer = new FileWriter(file);
+                    writer.write(serviceYmlContent);
+                    writer.close();
+                    String commitMessage = "Add serviceYmlContent";
+                    Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
+                    Git git = new Git(repository);
+                    git.checkout()
+                            .setName("develop") // 푸시할 브랜치 이름을 지정
+                            .call();
+                    git.add().addFilepattern(".").call();
+                    git.commit().setMessage(commitMessage).call();
+                    CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
+                    PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
+                    pushCommand.call();
+                    System.out.println("파일이 생성되었습니다.");
+                } else {
+                    System.err.println("파일 생성에 실패했습니다.");
+                }
+            } catch (IOException | GitAPIException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("파일이 이미 존재합니다.");
+        }
+    }
+
+    private void commitAndPushHpaTestYml(String localRepositoryPath, String githubUsername, String githubAccessToken, String serviceName) {
+        String hpaTestContent = String.format("apiVersion: autoscaling/v2beta1\n" +
+                "kind: HorizontalPodAutoscaler\n" +
+                "metadata:\n" +
+                "  name: %s\n" +
+                "spec:\n" +
+                "  minReplicas: 1\n" +
+                "  maxReplicas: 5\n" +
+                "  metrics:\n" +
+                "  - resource:\n" +
+                "      name: cpu \n" +
+                "      targetAverageUtilization: 10\n" +
+                "    type: Resource\n" +
+                "  scaleTargetRef:\n" +
+                "    apiVersion: apps/v1\n" +
+                "    kind: Deployment\n" +
+                "    name: devops-spring-deployment\n", serviceName);
+        String directoryPath = localRepositoryPath; // 디렉터리 경로 지정
+
+        String filePath = directoryPath + "/hpa-test.yml"; // 파일 경로 지정
+
+        File directory = new File(directoryPath);
+
+        // 디렉터리가 존재하지 않으면 생성
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
+                System.out.println("디렉터리가 생성되었습니다.");
+            } else {
+                System.err.println("디렉터리 생성에 실패했습니다.");
+                return;
+            }
+        }
+
+        File file = new File(filePath);
+
+        // 파일이 존재하지 않으면 생성
+        if (!file.exists()) {
+            try {
+                if (file.createNewFile()) {
+                    FileWriter writer = new FileWriter(file);
+                    writer.write(hpaTestContent);
+                    writer.close();
+                    String commitMessage = "Add hpaTestContent";
+                    Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
+                    Git git = new Git(repository);
+                    git.checkout()
+                            .setName("develop") // 푸시할 브랜치 이름을 지정
+                            .call();
+                    git.add().addFilepattern(".").call();
+                    git.commit().setMessage(commitMessage).call();
+                    CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
+                    PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
+                    pushCommand.call();
+                    System.out.println("파일이 생성되었습니다.");
+                } else {
+                    System.err.println("파일 생성에 실패했습니다.");
+                }
+            } catch (IOException | GitAPIException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("파일이 이미 존재합니다.");
+        }
     }
 }
