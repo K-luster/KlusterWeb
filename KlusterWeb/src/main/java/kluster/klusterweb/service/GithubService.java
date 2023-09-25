@@ -47,20 +47,11 @@ public class GithubService {
     }
 
 
-    public String getUserIdFromAccessToken(String accessToken) {
-//        JSONObject jsonObject = new JSONObject(body);
-
-        // "githubToken" 키로부터 "access token" 값 추출
-//        String accessToken = jsonObject.getString("githubToken");
+    public String getUserIdFromAccessToken(String githubAccessToken) {
         RestTemplate restTemplate = new RestTemplate();
-
-        // GitHub API 호출을 위한 헤더 설정
         HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + githubAccessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
-
-        // GitHub API 호출 및 응답 받기
-//        String response = restTemplate.getForObject(GITHUB_API_URL, String.class);
         ResponseEntity<String> responseEntity = restTemplate.exchange(
                 GITHUB_API_URL,
                 HttpMethod.GET,
@@ -71,12 +62,11 @@ public class GithubService {
             String response = responseEntity.getBody();
             return extractUserIdFromResponse(response);
         } else {
-            // 오류 처리
             return null;
         }
     }
 
-    private String extractUserIdFromResponse(String response) {
+    public String extractUserIdFromResponse(String response) {
          ObjectMapper objectMapper = new ObjectMapper();
          try {
              Map<String, Object> info = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {});
@@ -86,6 +76,7 @@ public class GithubService {
              return null;
          }
     }
+
     public String createRepository(String jwtToken, String repositoryName) {
         String githubAccessToken = getGithubAccessToken(jwtToken);
 
@@ -326,17 +317,14 @@ public class GithubService {
                 "  selector:\n" +
                 "    app: %s", serviceName, serviceName);
         try {
-            // Git 저장소 초기화
             Repository localRepo = new RepositoryBuilder().setGitDir(new File(localRepositoryPath + "/.git")).build();
             Git git = new Git(localRepo);
 
-            // YAML 파일 생성 및 내용 작성
             File deploymentyamlFile = new File(localRepositoryPath + "/deployment.yml");
             try (FileWriter writer = new FileWriter(deploymentyamlFile)) {
                 writer.write(deploymentYmlContent);
             }
 
-            // YAML 파일 스테이징 및 커밋
             git.add().addFilepattern("deployment.yaml").call();
             git.commit().setMessage("Add deployment.yaml").call();
 
@@ -351,7 +339,6 @@ public class GithubService {
                 writer.write(serviceYmlContent);
             }
 
-            // YAML 파일 스테이징 및 커밋
             git.add().addFilepattern("service.yaml").call();
             git.commit().setMessage("Add service.yaml").call();
 
@@ -359,6 +346,24 @@ public class GithubService {
 
 
             System.out.println("YAML service 파일 커밋 및 푸시 완료.");
+
+            String hpaTest = String.format("apiVersion: autoscaling/v2beta1\n" +
+                    "kind: HorizontalPodAutoscaler\n" +
+                    "metadata:\n" +
+                    "  name: %s\n" +
+                    "spec:\n" +
+                    "  minReplicas: 1  # 최소 replicas 개수\n" +
+                    "  maxReplicas: 5  # 최대 replicas 개수\n" +
+                    "  metrics:\n" +
+                    "  - resource:\n" +
+                    "      name: cpu  # HPA를 구성할 리소스(CPU, MEM 등)\n" +
+                    "      targetAverageUtilization: 10  # CPU 사용률이 10% 이상일 경우 생성\n" +
+                    "    type: Resource  # 리소스 타입 선언\n" +
+                    "  scaleTargetRef:  # 스케일 아웃할 타겟 설정\n" +
+                    "    apiVersion: apps/v1\n" +
+                    "    kind: Deployment  #  스케일 아웃할 타겟의 종류 (deployment, replicaset 등)\n" +
+                    "    name: devops-spring-deployment  #  스케일 아웃할 타겟의 네임\n", serviceName);
+            
         } catch (IOException | GitAPIException e) {
             e.printStackTrace();
         }

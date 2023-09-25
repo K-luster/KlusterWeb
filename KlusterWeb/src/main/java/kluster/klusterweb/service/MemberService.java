@@ -28,9 +28,9 @@ public class MemberService {
     private static String SCHOOL_NAME = "건국대학교";
 
     private final MemberRepository memberRepository;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final GithubService githubService;
 
     public LoginDto.Response login(String email, String password) {
         Optional<Member> member = memberRepository.findByEmail(email);
@@ -46,11 +46,12 @@ public class MemberService {
     }
 
     @Transactional
-    public MemberDto signUp(String email, String password, String githubName, String githubAccessToken, String dockerhubUsername, String dockerhubPassword, Boolean schoolAuthenticated) {
+    public MemberDto signUp(String email, String password, String githubAccessToken, String dockerhubUsername, String dockerhubPassword) {
         Optional<Member> check = memberRepository.findByEmail(email);
         if (check.isPresent()) {
             throw new RuntimeException("이미 존재하는 이메일입니다");
         }
+        String githubName = githubService.getUserIdFromAccessToken(githubAccessToken);
         Member member = Member.builder()
                 .email(email)
                 .password(passwordEncoder.encode(password))
@@ -58,7 +59,6 @@ public class MemberService {
                 .githubAccessToken(githubAccessToken)
                 .dockerHubUsername(dockerhubUsername)
                 .dockerHubPassword(dockerhubPassword)
-                .schoolAuthenticated(schoolAuthenticated)
                 .build();
 
         memberRepository.save(member);
@@ -69,7 +69,6 @@ public class MemberService {
                 .githubAccessToken(member.getGithubAccessToken())
                 .dockerHubUsername(member.getDockerHubUsername())
                 .dockerHubPassword(member.getDockerHubPassword())
-                .schoolAuthenticated(member.getSchoolAuthenticated())
                 .build();
         return memberDto;
     }

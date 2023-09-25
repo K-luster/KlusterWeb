@@ -27,7 +27,7 @@ public class LoginController {
 
     @PostMapping("/signup")
     public ResponseDto signUp(@RequestBody MemberDto memberDto){
-        return ResponseUtil.SUCCESS("회원가입 성공하였습니다.", memberService.signUp(memberDto.getEmail(), memberDto.getPassword(), memberDto.getGithubName(),memberDto.getGithubAccessToken(), memberDto.getDockerHubUsername(), memberDto.getDockerHubPassword(), memberDto.getSchoolAuthenticated()));
+        return ResponseUtil.SUCCESS("회원가입 성공하였습니다.", memberService.signUp(memberDto.getEmail(), memberDto.getPassword(), memberDto.getGithubAccessToken(), memberDto.getDockerHubUsername(), memberDto.getDockerHubPassword()));
     }
 
     @PostMapping("/school-email")
