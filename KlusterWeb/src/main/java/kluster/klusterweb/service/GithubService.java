@@ -133,18 +133,22 @@ public class GithubService {
             git.add().addFilepattern(".").call();
             git.commit().setMessage("first commit").call();
             System.out.println("Git 커밋 성공");
+            git.close();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Git 커밋 실패: " + e.getMessage());
         }
 
         //4-3. master(기존 브랜치 이름)를 main으로 변경
+        Git git1 = Git.open(localRepoPath);
         try {
-            git.branchRename()
-                    .setOldName("master") // 기존 브랜치 이름 (일반적으로 master)
-                    .setNewName("main")   // 변경할 브랜치 이름
+
+            Ref branchRef = git1.branchCreate()
+                    .setName("main")
                     .call();
-            System.out.println("branch 이름 변경 성공");
+            git1.checkout()
+                    .setName("main") // 브랜치 이름 지정
+                    .call();
         }
         catch (Exception e){
             e.printStackTrace();
@@ -152,10 +156,10 @@ public class GithubService {
         }
         //4-4. 원격 저장소에 add, main에 push
         try {
-            StoredConfig config = git.getRepository().getConfig();
+            StoredConfig config = git1.getRepository().getConfig();
             config.setString("remote", "origin", "url", githubRepoUrl);
             config.save();
-            git.push()
+            git1.push()
                     .setRemote("origin")
                     .setRefSpecs(new RefSpec("refs/heads/main:refs/heads/main"))
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
@@ -163,6 +167,7 @@ public class GithubService {
             System.out.println("Git 푸시 완료");
         } catch (Exception e) {
             e.printStackTrace();
+            git1.close();
             System.out.println("Git 푸시 실패: " + e.getMessage());
         }
         return "Success";
