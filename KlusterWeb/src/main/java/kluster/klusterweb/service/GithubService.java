@@ -14,7 +14,9 @@ import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryBuilder;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -77,17 +79,93 @@ public class GithubService {
          }
     }
 
-    public String createRepository(String jwtToken, String repositoryName) {
+    public String createRepository(String jwtToken, String repositoryName, String localPath) throws IOException,GitAPIException {
+        //1. jwt token으로 githubAccessToken 받아오기.
         String githubAccessToken = getGithubAccessToken(jwtToken);
 
+        //2. github API를 이용해서 Repository 생성하기
         RestTemplate restTemplate = new RestTemplate();
+        //2-1. 헤더 설정(AccessToken 헤더에 달기)
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "token " + githubAccessToken);
         headers.setContentType(MediaType.APPLICATION_JSON);
+        //2-2. jsonBody에 repositoryName을 달아서 생성하기
         String jsonBody = "{\"name\":\"" + repositoryName + "\"}";
         HttpEntity<String> requestEntity = new HttpEntity<>(jsonBody, headers);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(GITHUB_REPO_URL, HttpMethod.POST, requestEntity, String.class);
-        return responseEntity.getBody().toString();
+        try {
+            ResponseEntity<String> responseEntity = restTemplate.exchange(GITHUB_REPO_URL, HttpMethod.POST, requestEntity, String.class);
+        }
+        catch(Exception exception){
+            exception.printStackTrace();
+            log.error("repo 생성 실패 or github API 응답 실패");
+        }
+        //3. 생성된 Repository를 local로 가져오기
+        //3-1. github 사용자이름 획득
+        String githubUserName = getUserIdFromAccessToken(githubAccessToken);
+        //3-2. 만들고자하는 repository url 생성
+        String githubRepoUrl = "https://github.com/"+ githubUserName + "/" + repositoryName + ".git";
+        //3-3. 생성하고자 하는 local 경로 설정
+        File localRepoPath = new File(localPath+"\\" + repositoryName);
+
+        Git.cloneRepository()
+                .setURI(githubRepoUrl)
+                .setDirectory(localRepoPath)
+                .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
+                .call();
+        //4. 생성된 Repo 세팅
+        //4-1. Git init
+        Git git = Git.open(localRepoPath);
+
+        try{
+            git.init().call();
+            System.out.println("Git 초기화 완료");
+        }
+        catch(GitAPIException e){
+            e.printStackTrace();
+            System.out.println("Git 초기화 실패");
+        }
+
+        //4-2. Readme file 생성 및 커밋
+        File readmeFile = new File(localRepoPath, "README.md");
+        readmeFile.createNewFile();
+
+        try {
+            git.add().addFilepattern(".").call();
+            git.commit().setMessage("first commit").call();
+            System.out.println("Git 커밋 성공");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Git 커밋 실패: " + e.getMessage());
+        }
+
+        //4-3. master(기존 브랜치 이름)를 main으로 변경
+        try {
+            git.branchRename()
+                    .setOldName("master") // 기존 브랜치 이름 (일반적으로 master)
+                    .setNewName("main")   // 변경할 브랜치 이름
+                    .call();
+            System.out.println("branch 이름 변경 성공");
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            System.out.println("branch 이름 변경 실패");
+        }
+        //4-4. 원격 저장소에 add, main에 push
+        try {
+            StoredConfig config = git.getRepository().getConfig();
+            config.setString("remote", "origin", "url", githubRepoUrl);
+            config.save();
+            git.push()
+                    .setRemote("origin")
+                    .setRefSpecs(new RefSpec("refs/heads/main:refs/heads/main"))
+                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
+                    .call();
+            System.out.println("Git 푸시 완료");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Git 푸시 실패: " + e.getMessage());
+        }
+        return "Success";
     }
 
     public String buildDockerAndGithubAction(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) throws Exception {

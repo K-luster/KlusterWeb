@@ -5,6 +5,7 @@ import kluster.klusterweb.config.response.ResponseUtil;
 import kluster.klusterweb.dto.*;
 import kluster.klusterweb.service.GithubService;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.ModelMap;
@@ -25,8 +26,12 @@ public class GithubController {
 
     @PostMapping("/create-repository")
     public ResponseDto createRepository(HttpServletRequest request, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) {
-        return ResponseUtil.SUCCESS("Github 레포지토리가 생성되었습니다.",
-                githubService.createRepository(request.getHeader("Authorization"), repositoryName.getRepositoryName()));
+        try {
+            return ResponseUtil.SUCCESS("Github 레포지토리가 생성되었습니다.",
+                    githubService.createRepository(request.getHeader("Authorization"), repositoryName.getRepositoryName(), repositoryName.getLocalPath()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @PostMapping("/auto-ci")
