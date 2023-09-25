@@ -13,6 +13,7 @@ public class RepositoryDto {
     @Builder
     public static class RepositoryRequestDto {
         private String repositoryName;
+        private String localPath;
     }
 
     @Data
