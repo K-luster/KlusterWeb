@@ -3,6 +3,7 @@ package kluster.klusterweb.controller;
 import kluster.klusterweb.config.response.ResponseDto;
 import kluster.klusterweb.config.response.ResponseUtil;
 import kluster.klusterweb.dto.*;
+import kluster.klusterweb.service.ArgoService;
 import kluster.klusterweb.service.GithubService;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -13,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 
@@ -23,6 +27,7 @@ import java.util.List;
 public class GithubController {
 
     private final GithubService githubService;
+    private final ArgoService argoService;
 
     @PostMapping("/create-repository")
     public ResponseDto createRepository(HttpServletRequest request, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) {
@@ -41,14 +46,14 @@ public class GithubController {
     }
 
     @PostMapping("/auto-cd")
-    public ResponseDto autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) {
-        return ResponseUtil.SUCCESS("자동 CD 준비를 끝냈습니다.",
-                githubService.deploy(
-                        request.getHeader("Authorization"),
-                        deployRequestDto.getLocalRepositoryPath(),
-                        deployRequestDto.getRepositoryName(),
-                        deployRequestDto.getServiceName(),
-                        deployRequestDto.getReplicaCount()));
+    public ResponseDto autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        githubService.deploy(
+                request.getHeader("Authorization"),
+                deployRequestDto.getLocalRepositoryPath(),
+                deployRequestDto.getRepositoryName(),
+                deployRequestDto.getServiceName(),
+                deployRequestDto.getReplicaCount());
+        return ResponseUtil.SUCCESS("애플리케이션이 생성되었습니다.", argoService.makeApplications(deployRequestDto.getArgoApiRequestDto()));
     }
 
     @PostMapping("/get-all-repository")

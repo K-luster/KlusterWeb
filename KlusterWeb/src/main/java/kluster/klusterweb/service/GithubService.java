@@ -364,7 +364,7 @@ public class GithubService {
         return repositories;
     }
 
-    public String deploy(String jwtToken, String localRepositoryPath, String repositoryName, String serviceName, String replicaCount) {
+    public void deploy(String jwtToken, String localRepositoryPath, String repositoryName, String serviceName, String replicaCount) {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
         String githubUsername = member.getGithubName();
@@ -374,7 +374,6 @@ public class GithubService {
         commitAndPushDeploymentYml(localRepositoryPath, githubUsername, githubAccessToken, serviceName, replicaCount, dockerhubUsername);
         commitAndPushServiceYml(localRepositoryPath, githubUsername, githubAccessToken, serviceName);
         commitAndPushHpaTestYml(localRepositoryPath, githubUsername, githubAccessToken, serviceName);
-        return null;
     }
 
     private void commitAndPushDeploymentYml(String localRepositoryPath, String githubUsername, String githubAccessToken, String serviceName, String replicaCount, String dockerhubUsername) {
