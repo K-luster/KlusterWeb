@@ -13,7 +13,6 @@ import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.RepositoryBuilder;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.RefSpec;
@@ -114,10 +113,13 @@ public class GithubService {
                 .call();
         //4. 생성된 Repo 세팅
         //4-1. Git init
-        Git git = Git.open(localRepoPath);
+//        Git git = Git.open(localRepoPath);
 
         try{
-            git.init().call();
+            Git.init()
+                .setDirectory(localRepoPath)
+                .call();
+//            git.init().call();
             System.out.println("Git 초기화 완료");
         }
         catch(GitAPIException e){
@@ -129,37 +131,34 @@ public class GithubService {
         File readmeFile = new File(localRepoPath, "README.md");
         readmeFile.createNewFile();
 
-        try {
+        try(Git git = Git.open(localRepoPath)) {
             git.add().addFilepattern(".").call();
             git.commit().setMessage("first commit").call();
             System.out.println("Git 커밋 성공");
-            git.close();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Git 커밋 실패: " + e.getMessage());
         }
 
         //4-3. master(기존 브랜치 이름)를 main으로 변경
-        Git git1 = Git.open(localRepoPath);
-        try {
-
-            Ref branchRef = git1.branchCreate()
-                    .setName("main")
-                    .call();
-            git1.checkout()
-                    .setName("main") // 브랜치 이름 지정
-                    .call();
+        try (Git git = Git.open(localRepoPath);){
+            git.checkout()
+                .setName("main")
+                .setCreateBranch(true)
+                .call();
+            System.out.println("branch 이름 변경 성공");
         }
         catch (Exception e){
             e.printStackTrace();
             System.out.println("branch 이름 변경 실패");
         }
         //4-4. 원격 저장소에 add, main에 push
-        try {
-            StoredConfig config = git1.getRepository().getConfig();
+        try (Git git = Git.open(localRepoPath)){
+            StoredConfig config = git.getRepository().getConfig();
+            System.out.println(git.getRepository());
             config.setString("remote", "origin", "url", githubRepoUrl);
             config.save();
-            git1.push()
+            git.push()
                     .setRemote("origin")
                     .setRefSpecs(new RefSpec("refs/heads/main:refs/heads/main"))
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
@@ -167,7 +166,6 @@ public class GithubService {
             System.out.println("Git 푸시 완료");
         } catch (Exception e) {
             e.printStackTrace();
-            git1.close();
             System.out.println("Git 푸시 실패: " + e.getMessage());
         }
         return "Success";
@@ -181,6 +179,8 @@ public class GithubService {
         String dockerhubUsername = member.getDockerHubUsername();
         String dockerhubPassword = member.getDockerHubPassword();
 
+        //git clone코드 생성 필요
+        cloneGitRepository(repositoryName, email, githubAccessToken);
         createDevelopBranch(localRepositoryPath, branchName);
 
         String javaDockerfileContent = String.format("FROM openjdk:11\n" +
@@ -214,6 +214,17 @@ public class GithubService {
 
         commitAndPushGithubAction(localRepositoryPath, branchName, githubAccessToken, githubUsername, dockerhubUsername, dockerhubPassword, repositoryName);
         return "CI 성공";
+    }
+
+    public void cloneGitRepository(String repositoryName, String email, String githubAccessToken) throws GitAPIException {
+        String repositoryUrl = "https://github.com/" + email+ "/" + repositoryName;
+        String localPath = "/home/ubuntu/github";
+        System.out.println(repositoryUrl);
+        Git.cloneRepository()
+                .setURI(repositoryUrl)
+                .setDirectory(new File(localPath))
+                .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
+                .call();
     }
 
     public void createDevelopBranch(String localRepositoryPath, String branchName){
