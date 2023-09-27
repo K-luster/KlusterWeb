@@ -180,7 +180,7 @@ public class GithubService {
         String dockerhubPassword = member.getDockerHubPassword();
 
         //git clone코드 생성 필요
-        cloneGitRepository(repositoryName, email, githubAccessToken);
+        cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
         createDevelopBranch(localRepositoryPath, branchName);
 
         String javaDockerfileContent = String.format("FROM openjdk:11\n" +
@@ -216,8 +216,8 @@ public class GithubService {
         return "CI 성공";
     }
 
-    public void cloneGitRepository(String repositoryName, String email, String githubAccessToken) throws GitAPIException {
-        String repositoryUrl = "https://github.com/" + email+ "/" + repositoryName;
+    public void cloneGitRepository(String repositoryName, String githubUsername, String githubAccessToken) throws GitAPIException {
+        String repositoryUrl = "https://github.com/" + githubUsername+ "/" + repositoryName;
         String localPath = "/home/ubuntu/github";
         System.out.println(repositoryUrl);
         Git.cloneRepository()
