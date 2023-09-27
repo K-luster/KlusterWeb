@@ -13,7 +13,6 @@ import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.RepositoryBuilder;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.RefSpec;
@@ -180,6 +179,8 @@ public class GithubService {
         String dockerhubUsername = member.getDockerHubUsername();
         String dockerhubPassword = member.getDockerHubPassword();
 
+        //git clone코드 생성 필요
+        cloneGitRepository(repositoryName, email, githubAccessToken);
         createDevelopBranch(localRepositoryPath, branchName);
 
         String javaDockerfileContent = String.format("FROM openjdk:11\n" +
@@ -213,6 +214,17 @@ public class GithubService {
 
         commitAndPushGithubAction(localRepositoryPath, branchName, githubAccessToken, githubUsername, dockerhubUsername, dockerhubPassword, repositoryName);
         return "CI 성공";
+    }
+
+    public void cloneGitRepository(String repositoryName, String email, String githubAccessToken) throws GitAPIException {
+        String repositoryUrl = "https://github.com/" + email+ "/" + repositoryName;
+        String localPath = "/home/ubuntu/github";
+        System.out.println(repositoryUrl);
+        Git.cloneRepository()
+                .setURI(repositoryUrl)
+                .setDirectory(new File(localPath))
+                .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
+                .call();
     }
 
     public void createDevelopBranch(String localRepositoryPath, String branchName){
