@@ -290,32 +290,28 @@ public class GithubService {
         File file = new File(filePath);
 
         // 파일이 존재하지 않으면 생성
-        if (!file.exists()) {
-            try {
-                if (file.createNewFile()) {
-                    FileWriter writer = new FileWriter(file);
-                    writer.write(actionContent);
-                    writer.close();
-                    String commitMessage = "Add githubActionFile";
-                    Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
-                    Git git = new Git(repository);
-                    git.checkout()
-                            .setName("develop") // 푸시할 브랜치 이름을 지정
-                            .call();
-                    git.add().addFilepattern(".").call();
-                    git.commit().setMessage(commitMessage).call();
-                    CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
-                    PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
-                    pushCommand.call();
-                    System.out.println("파일이 생성되었습니다.");
-                } else {
-                    System.err.println("파일 생성에 실패했습니다.");
-                }
-            } catch (IOException | GitAPIException e) {
-                e.printStackTrace();
+        try {
+            if (file.createNewFile()) {
+                FileWriter writer = new FileWriter(file);
+                writer.write(actionContent);
+                writer.close();
+                String commitMessage = "Add githubActionFile";
+                Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
+                Git git = new Git(repository);
+                git.checkout()
+                        .setName("develop") // 푸시할 브랜치 이름을 지정
+                        .call();
+                git.add().addFilepattern(".").call();
+                git.commit().setMessage(commitMessage).call();
+                CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
+                PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
+                pushCommand.call();
+                System.out.println("파일이 생성되었습니다.");
+            } else {
+                System.err.println("파일 생성에 실패했습니다.");
             }
-        } else {
-            System.out.println("파일이 이미 존재합니다.");
+        } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
         }
     }
 
@@ -421,32 +417,28 @@ public class GithubService {
         File file = new File(filePath);
 
         // 파일이 존재하지 않으면 생성
-        if (!file.exists()) {
-            try {
-                if (file.createNewFile()) {
-                    FileWriter writer = new FileWriter(file);
-                    writer.write(deploymentYmlContent);
-                    writer.close();
-                    String commitMessage = "Add deploymentYmlContent";
-                    Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
-                    Git git = new Git(repository);
-                    git.checkout()
-                            .setName("develop") // 푸시할 브랜치 이름을 지정
-                            .call();
-                    git.add().addFilepattern(".").call();
-                    git.commit().setMessage(commitMessage).call();
-                    CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
-                    PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
-                    pushCommand.call();
-                    System.out.println("파일이 생성되었습니다.");
-                } else {
-                    System.err.println("파일 생성에 실패했습니다.");
-                }
-            } catch (IOException | GitAPIException e) {
-                e.printStackTrace();
+        try {
+            if (file.createNewFile()) {
+                FileWriter writer = new FileWriter(file);
+                writer.write(deploymentYmlContent);
+                writer.close();
+                String commitMessage = "Add deploymentYmlContent";
+                Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
+                Git git = new Git(repository);
+                git.checkout()
+                        .setName("develop") // 푸시할 브랜치 이름을 지정
+                        .call();
+                git.add().addFilepattern(".").call();
+                git.commit().setMessage(commitMessage).call();
+                CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
+                PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
+                pushCommand.call();
+                System.out.println("파일이 생성되었습니다.");
+            } else {
+                System.err.println("파일 생성에 실패했습니다.");
             }
-        } else {
-            System.out.println("파일이 이미 존재합니다.");
+        } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
         }
     }
 
@@ -456,7 +448,7 @@ public class GithubService {
                 "metadata:\n" +
                 "  name: %s\n" +
                 "spec:\n" +
-                "  type: NodePort\n" +
+                "  type: LoadBalancer\n" +
                 "  ports:\n" +
                 "    - port: 80\n" +
                 "      protocol: TCP\n" +
@@ -482,32 +474,28 @@ public class GithubService {
         File file = new File(filePath);
 
         // 파일이 존재하지 않으면 생성
-        if (!file.exists()) {
-            try {
-                if (file.createNewFile()) {
-                    FileWriter writer = new FileWriter(file);
-                    writer.write(serviceYmlContent);
-                    writer.close();
-                    String commitMessage = "Add serviceYmlContent";
-                    Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
-                    Git git = new Git(repository);
-                    git.checkout()
-                            .setName("develop") // 푸시할 브랜치 이름을 지정
-                            .call();
-                    git.add().addFilepattern(".").call();
-                    git.commit().setMessage(commitMessage).call();
-                    CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
-                    PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
-                    pushCommand.call();
-                    System.out.println("파일이 생성되었습니다.");
-                } else {
-                    System.err.println("파일 생성에 실패했습니다.");
-                }
-            } catch (IOException | GitAPIException e) {
-                e.printStackTrace();
+        try {
+            if (file.createNewFile()) {
+                FileWriter writer = new FileWriter(file);
+                writer.write(serviceYmlContent);
+                writer.close();
+                String commitMessage = "Add serviceYmlContent";
+                Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
+                Git git = new Git(repository);
+                git.checkout()
+                        .setName("develop") // 푸시할 브랜치 이름을 지정
+                        .call();
+                git.add().addFilepattern(".").call();
+                git.commit().setMessage(commitMessage).call();
+                CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
+                PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
+                pushCommand.call();
+                System.out.println("파일이 생성되었습니다.");
+            } else {
+                System.err.println("파일 생성에 실패했습니다.");
             }
-        } else {
-            System.out.println("파일이 이미 존재합니다.");
+        } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
         }
     }
 
@@ -547,32 +535,28 @@ public class GithubService {
         File file = new File(filePath);
 
         // 파일이 존재하지 않으면 생성
-        if (!file.exists()) {
-            try {
-                if (file.createNewFile()) {
-                    FileWriter writer = new FileWriter(file);
-                    writer.write(hpaTestContent);
-                    writer.close();
-                    String commitMessage = "Add hpaTestContent";
-                    Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
-                    Git git = new Git(repository);
-                    git.checkout()
-                            .setName("develop") // 푸시할 브랜치 이름을 지정
-                            .call();
-                    git.add().addFilepattern(".").call();
-                    git.commit().setMessage(commitMessage).call();
-                    CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
-                    PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
-                    pushCommand.call();
-                    System.out.println("파일이 생성되었습니다.");
-                } else {
-                    System.err.println("파일 생성에 실패했습니다.");
-                }
-            } catch (IOException | GitAPIException e) {
-                e.printStackTrace();
+        try {
+            if (file.createNewFile()) {
+                FileWriter writer = new FileWriter(file);
+                writer.write(hpaTestContent);
+                writer.close();
+                String commitMessage = "Add hpaTestContent";
+                Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
+                Git git = new Git(repository);
+                git.checkout()
+                        .setName("develop") // 푸시할 브랜치 이름을 지정
+                        .call();
+                git.add().addFilepattern(".").call();
+                git.commit().setMessage(commitMessage).call();
+                CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
+                PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
+                pushCommand.call();
+                System.out.println("파일이 생성되었습니다.");
+            } else {
+                System.err.println("파일 생성에 실패했습니다.");
             }
-        } else {
-            System.out.println("파일이 이미 존재합니다.");
+        } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
         }
     }
 }

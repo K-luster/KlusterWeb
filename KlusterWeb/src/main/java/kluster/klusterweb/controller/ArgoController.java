@@ -7,6 +7,8 @@ import kluster.klusterweb.service.ArgoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.net.http.HttpRequest;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -25,7 +27,7 @@ public class ArgoController {
     }
 
     @PostMapping("/make-application")
-    public ResponseDto makeApplication(@RequestBody ArgoApiRequestDto argoApiRequestDto) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-        return ResponseUtil.SUCCESS("애플리케이션을 생성했습니다.", argoService.makeApplications(argoApiRequestDto));
+    public ResponseDto makeApplication(HttpServletRequest request, @RequestBody ArgoApiRequestDto argoApiRequestDto) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        return ResponseUtil.SUCCESS("애플리케이션을 생성했습니다.", argoService.makeApplications(request.getHeader("Authorization"), argoApiRequestDto));
     }
 }

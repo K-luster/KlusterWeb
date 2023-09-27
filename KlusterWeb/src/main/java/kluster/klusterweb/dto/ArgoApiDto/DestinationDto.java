@@ -1,13 +1,12 @@
 package kluster.klusterweb.dto.ArgoApiDto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import kluster.klusterweb.service.MemberService;
+import lombok.*;
 
 @Getter
-@AllArgsConstructor
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class DestinationDto {
 

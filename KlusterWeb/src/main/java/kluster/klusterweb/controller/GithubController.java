@@ -53,7 +53,7 @@ public class GithubController {
                 deployRequestDto.getRepositoryName(),
                 deployRequestDto.getServiceName(),
                 deployRequestDto.getReplicaCount());
-        return ResponseUtil.SUCCESS("애플리케이션이 생성되었습니다.", argoService.makeApplications(deployRequestDto.getArgoApiRequestDto()));
+        return ResponseUtil.SUCCESS("애플리케이션이 생성되었습니다.", argoService.makeApplications(request.getHeader("Authorization"), deployRequestDto.getArgoApiRequestDto()));
     }
 
     @PostMapping("/get-all-repository")

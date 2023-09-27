@@ -1,7 +1,11 @@
 package kluster.klusterweb.service;
 
+import kluster.klusterweb.config.jwt.JwtTokenProvider;
+import kluster.klusterweb.domain.Member;
 import kluster.klusterweb.dto.ArgoApiDto.ArgoApiRequestDto;
 import kluster.klusterweb.dto.ArgoApiDto.ArgoApiResponseDto;
+import kluster.klusterweb.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
@@ -21,6 +25,7 @@ import java.security.cert.X509Certificate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 @Service
+@RequiredArgsConstructor
 public class ArgoService {
 
     @Value("${argocd.url}")
@@ -28,6 +33,9 @@ public class ArgoService {
 
     @Value("${argocd.cookie}")
     private String cookieValue;
+
+    private final MemberRepository memberRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public RestTemplate makeRestTemplate() throws KeyStoreException, KeyManagementException, NoSuchAlgorithmException {
         TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
@@ -57,11 +65,14 @@ public class ArgoService {
         return responseEntity;
     }
 
-    public ResponseEntity<ArgoApiResponseDto> makeApplications(ArgoApiRequestDto requestDto) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    public ResponseEntity<ArgoApiResponseDto> makeApplications(String jwtToken, ArgoApiRequestDto requestDto) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
         RestTemplate restTemplate = this.makeRestTemplate();
         String apiUrl = argoApiUrl + "/applications";
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", "argocd.token=" + cookieValue);
+        requestDto.getSpecDto().getDestinationDto().setNamespace(member.getGithubName());
         HttpEntity<ArgoApiRequestDto> requestEntity = new HttpEntity<>(requestDto, headers);
         ResponseEntity<ArgoApiResponseDto> responseEntity = restTemplate.exchange(
                 apiUrl,
