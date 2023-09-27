@@ -527,7 +527,7 @@ public class GithubService {
                 "  scaleTargetRef:\n" +
                 "    apiVersion: apps/v1\n" +
                 "    kind: Deployment\n" +
-                "    name: devops-spring-deployment\n", serviceName);
+                "    name: %s\n", serviceName, serviceName);
         String directoryPath = localRepositoryPath; // 디렉터리 경로 지정
 
         String filePath = directoryPath + "/hpa-test.yml"; // 파일 경로 지정

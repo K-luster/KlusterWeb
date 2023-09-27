@@ -41,7 +41,7 @@ public class ArgoService {
         HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         requestFactory.setHttpClient(httpClient);
         requestFactory.setConnectTimeout(3 * 1000);
-        requestFactory.setReadTimeout(5 * 1000);
+        requestFactory.setReadTimeout(50 * 1000);
         return new RestTemplate(requestFactory);
     }
 
