@@ -114,10 +114,13 @@ public class GithubService {
                 .call();
         //4. 생성된 Repo 세팅
         //4-1. Git init
-        Git git = Git.open(localRepoPath);
+//        Git git = Git.open(localRepoPath);
 
         try{
-            git.init().call();
+            Git.init()
+                .setDirectory(localRepoPath)
+                .call();
+//            git.init().call();
             System.out.println("Git 초기화 완료");
         }
         catch(GitAPIException e){
@@ -129,37 +132,34 @@ public class GithubService {
         File readmeFile = new File(localRepoPath, "README.md");
         readmeFile.createNewFile();
 
-        try {
+        try(Git git = Git.open(localRepoPath)) {
             git.add().addFilepattern(".").call();
             git.commit().setMessage("first commit").call();
             System.out.println("Git 커밋 성공");
-            git.close();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Git 커밋 실패: " + e.getMessage());
         }
 
         //4-3. master(기존 브랜치 이름)를 main으로 변경
-        Git git1 = Git.open(localRepoPath);
-        try {
-
-            Ref branchRef = git1.branchCreate()
-                    .setName("main")
-                    .call();
-            git1.checkout()
-                    .setName("main") // 브랜치 이름 지정
-                    .call();
+        try (Git git = Git.open(localRepoPath);){
+            git.checkout()
+                .setName("main")
+                .setCreateBranch(true)
+                .call();
+            System.out.println("branch 이름 변경 성공");
         }
         catch (Exception e){
             e.printStackTrace();
             System.out.println("branch 이름 변경 실패");
         }
         //4-4. 원격 저장소에 add, main에 push
-        try {
-            StoredConfig config = git1.getRepository().getConfig();
+        try (Git git = Git.open(localRepoPath)){
+            StoredConfig config = git.getRepository().getConfig();
+            System.out.println(git.getRepository());
             config.setString("remote", "origin", "url", githubRepoUrl);
             config.save();
-            git1.push()
+            git.push()
                     .setRemote("origin")
                     .setRefSpecs(new RefSpec("refs/heads/main:refs/heads/main"))
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
@@ -167,7 +167,6 @@ public class GithubService {
             System.out.println("Git 푸시 완료");
         } catch (Exception e) {
             e.printStackTrace();
-            git1.close();
             System.out.println("Git 푸시 실패: " + e.getMessage());
         }
         return "Success";
