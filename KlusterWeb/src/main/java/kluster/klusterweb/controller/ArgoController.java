@@ -22,8 +22,8 @@ public class ArgoController {
     private final ArgoService argoService;
 
     @GetMapping("/get-all-applications")
-    public ResponseDto getAllApplications() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        return ResponseUtil.SUCCESS("모든 애플리케이션을 가져왔습니다", argoService.getAllApplications());
+    public ResponseDto getAllApplications(HttpServletRequest request) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        return ResponseUtil.SUCCESS("모든 애플리케이션을 가져왔습니다", argoService.getAllApplications(request.getHeader("Authorization")));
     }
 
     @PostMapping("/make-application")

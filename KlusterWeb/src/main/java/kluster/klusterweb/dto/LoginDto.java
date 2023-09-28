@@ -19,6 +19,7 @@ public class LoginDto {
     @NoArgsConstructor
     public static class Response {
         private String email;
+        private String githubUsername;
         private String generateType;
         private String accessToken;
     }

@@ -37,7 +37,7 @@ public class MemberService {
         if (member.isPresent()) {
             if (passwordEncoder.matches(password, member.get().getPassword())) {
                 JwtTokenInfo tokenInfo = jwtTokenProvider.generateToken(member.get());
-                LoginDto.Response loginResponseDTO = new LoginDto.Response(email, tokenInfo.getGrantType(), tokenInfo.getAccessToken());
+                LoginDto.Response loginResponseDTO = new LoginDto.Response(email, member.get().getGithubName(), tokenInfo.getGrantType(), tokenInfo.getAccessToken());
                 return loginResponseDTO;
             }
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");

@@ -1,9 +1,10 @@
 package kluster.klusterweb.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kluster.klusterweb.config.jwt.JwtTokenProvider;
 import kluster.klusterweb.domain.Member;
-import kluster.klusterweb.dto.ArgoApiDto.ArgoApiRequestDto;
-import kluster.klusterweb.dto.ArgoApiDto.ArgoApiResponseDto;
+import kluster.klusterweb.dto.ArgoApiDto.*;
 import kluster.klusterweb.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -22,8 +23,13 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+
 @Service
 @RequiredArgsConstructor
 public class ArgoService {
@@ -54,15 +60,26 @@ public class ArgoService {
     }
 
 
-    public ResponseEntity<String> getAllApplications() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    public List<ArgoApplicationResponseDto> getAllApplications(String jwtToken) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+        String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
+        String namespace = member.getGithubName();
         RestTemplate restTemplate = this.makeRestTemplate();
         String apiUrl = argoApiUrl + "/applications";
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", "argocd.token=" + cookieValue);
         HttpEntity<String> requestEntity = new HttpEntity<>(null, headers);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(apiUrl
-                ,HttpMethod.GET, requestEntity, String.class);
-        return responseEntity;
+        ResponseEntity<ArgoNameSpaceApplicationResponseDto> response = restTemplate.exchange(apiUrl
+                , HttpMethod.GET, requestEntity, ArgoNameSpaceApplicationResponseDto.class);
+        List<Items> items = response.getBody().getItems();
+        List<ArgoApplicationResponseDto> argoApplicationResponseDtos = items.stream()
+                .filter(item -> item.getSpec().getDestination().getNamespace().equals(namespace))
+                .map(item -> ArgoApplicationResponseDto.builder()
+                        .name(item.getMetadata().getName())
+                        .repoURL(item.getSpec().getSource().getRepoUrl())
+                        .build())
+                .collect(Collectors.toList());
+        return argoApplicationResponseDtos;
     }
 
     public ResponseEntity<ArgoApiResponseDto> makeApplications(String jwtToken, ArgoApiRequestDto requestDto) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
