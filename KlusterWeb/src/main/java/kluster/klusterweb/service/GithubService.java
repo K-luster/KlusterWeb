@@ -217,7 +217,7 @@ public class GithubService {
     }
 
     public void cloneGitRepository(String repositoryName, String githubUsername, String githubAccessToken) throws GitAPIException {
-        String repositoryUrl = "https://github.com/" + githubUsername+ "/" + repositoryName;
+        String repositoryUrl = "https://github.com/" + githubUsername+ "/" + repositoryName+".git";
         String localPath = "/home/ubuntu/github";
         System.out.println(repositoryUrl);
         Git.cloneRepository()
