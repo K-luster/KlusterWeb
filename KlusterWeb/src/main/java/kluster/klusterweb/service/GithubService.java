@@ -179,14 +179,14 @@ public class GithubService {
         String dockerhubUsername = member.getDockerHubUsername();
         String dockerhubPassword = member.getDockerHubPassword();
 
-        //git clone코드 생성 필요
-        cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
+        // git clone코드 생성 필요
+        // cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
         createDevelopBranch(localRepositoryPath, branchName);
 
         String javaDockerfileContent = String.format("FROM openjdk:11\n" +
                 "ARG JAR_FILE=*.jar\n" +
                 "COPY ${JAR_FILE} app.jar\n" +
-                "ENTRYPOINT [\"java\",\"-jar\",\"/app.jar\"]\n" +
+                "ENTRYPOINT [\"java\",\"-jar\",\"./app.jar\"]\n" +
                 "\n");
 
         String dockerfilePath = localRepositoryPath + "/Dockerfile";
@@ -199,7 +199,7 @@ public class GithubService {
             Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
             Git git = new Git(repository);
             git.checkout()
-                    .setName("develop") // 푸시할 브랜치 이름을 지정
+                    .setName(branchName) // 푸시할 브랜치 이름을 지정
                     .call();
             git.add().addFilepattern(".").call();
             git.commit().setMessage(commitMessage).call();
@@ -240,7 +240,7 @@ public class GithubService {
                     .setStartPoint(startPoint)
                     .call();
             git.checkout()
-                    .setName("develop") // 브랜치 이름 지정
+                    .setName(branchName) // 브랜치 이름 지정
                     .call();
             System.out.println("새로운 브랜치가 생성되었습니다:");
             System.out.println("브랜치 이름: " + branchRef.getName());

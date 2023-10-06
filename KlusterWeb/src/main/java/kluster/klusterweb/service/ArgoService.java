@@ -63,7 +63,7 @@ public class ArgoService {
     public List<ArgoApplicationResponseDto> getAllApplications(String jwtToken) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
-        String namespace = member.getGithubName();
+        String namespace = member.getGithubName().toLowerCase();
         RestTemplate restTemplate = this.makeRestTemplate();
         String apiUrl = argoApiUrl + "/applications";
         HttpHeaders headers = new HttpHeaders();
@@ -89,7 +89,8 @@ public class ArgoService {
         String apiUrl = argoApiUrl + "/applications";
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", "argocd.token=" + cookieValue);
-        requestDto.getSpecDto().getDestinationDto().setNamespace(member.getGithubName());
+        requestDto.getSpecDto().getDestinationDto().setNamespace(member.getGithubName().toLowerCase());
+        requestDto.getSpecDto().getSyncPolicyDto().setSyncOptions(new ArrayList<>());
         HttpEntity<ArgoApiRequestDto> requestEntity = new HttpEntity<>(requestDto, headers);
         ResponseEntity<ArgoApiResponseDto> responseEntity = restTemplate.exchange(
                 apiUrl,

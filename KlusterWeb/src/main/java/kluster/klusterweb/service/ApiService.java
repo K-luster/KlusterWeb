@@ -37,7 +37,7 @@ public class ApiService {
         throw new RuntimeException("존재하지 않는 이메일입니다.");
     }
     public List getPodResource(String jwtToken, String resourceType, String apiName) {
-        String githubName = getGithubName(jwtToken);
+        String githubName = getGithubName(jwtToken).toLowerCase();
         try {
             ResponseEntity e = restApiUtil.execute(HttpMethod.GET, resourceType, apiName, githubName);
             if (apiName.equals("pod_list"))
