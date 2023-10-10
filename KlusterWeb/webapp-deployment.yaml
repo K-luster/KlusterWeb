@@ -26,14 +26,7 @@ spec:
         io.kompose.service: webapp
     spec:
       containers:
-        - env:
-            - name: SPRING_DATASOURCE_PASSWORD
-              value: rlaxogjs8312
-            - name: SPRING_DATASOURCE_URL
-              value: jdbc:mysql://database:3306/kluster?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
-            - name: SPRING_DATASOURCE_USERNAME
-              value: root
-          image: jakeheon/klusterweb
+        - image: jakeheon/klusterweb
           name: kluster-app
           ports:
             - containerPort: 8080

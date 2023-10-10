@@ -1,0 +1,3 @@
+-- 'root' 사용자로 로그인한 경우
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'rlaxogjs8312' WITH GRANT OPTION;
+FLUSH PRIVILEGES;

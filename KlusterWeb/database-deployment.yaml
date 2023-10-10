@@ -14,7 +14,8 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: database
-  strategy: {}
+  strategy:
+    type: Recreate
   template:
     metadata:
       annotations:
@@ -42,5 +43,12 @@ spec:
               hostPort: 3306
               protocol: TCP
           resources: {}
+          volumeMounts:
+            - mountPath: /docker-entrypoint-initdb.d
+              name: mysql-init.d
       restartPolicy: Always
+      volumes:
+        - name: mysql-init.d
+          persistentVolumeClaim:
+            claimName: mysql-init.d
 status: {}
