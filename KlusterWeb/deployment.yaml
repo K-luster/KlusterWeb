@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mynginx
+  name: klusterweb
 spec:
   replicas: 1
   selector:
     matchLabels:
-      run: mynginx
+      app: your-app-label
   template:
     metadata:
       labels:
-        run: mynginx
+        app: your-app-label
     spec:
       containers:
-        - image: jakeheon/klusterweb
-          name: klusterweb
+        - name: klusterweb
+          image: jakeheon/klusterweb:latest # 도커 이미지 이름과 버전을 적절하게 변경
           ports:
-            - containerPort: 80
+            - containerPort: 8080

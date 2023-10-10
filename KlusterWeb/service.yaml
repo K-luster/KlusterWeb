@@ -3,9 +3,11 @@ kind: Service
 metadata:
   name: klusterweb
 spec:
-  ports:
-    - port: 80
-      protocol: TCP
-      targetPort: 80
   selector:
-    run: klusterweb
+    app: klusterweb
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer
