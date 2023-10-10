@@ -14,8 +14,7 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: database
-  strategy:
-    type: Recreate
+  strategy: {}
   template:
     metadata:
       annotations:
@@ -43,12 +42,5 @@ spec:
               hostPort: 3306
               protocol: TCP
           resources: {}
-          volumeMounts:
-            - mountPath: /app/data
-              name: mydata-volume
       restartPolicy: Always
-      volumes:
-        - name: mydata-volume
-          persistentVolumeClaim:
-            claimName: mydata-volume
 status: {}
