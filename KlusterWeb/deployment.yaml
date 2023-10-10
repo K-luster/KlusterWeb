@@ -6,11 +6,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: your-app-label
+      app: klusterweb
   template:
     metadata:
       labels:
-        app: your-app-label
+        app: klusterweb
     spec:
       containers:
         - name: klusterweb
