@@ -3,11 +3,11 @@ kind: PersistentVolumeClaim
 metadata:
   creationTimestamp: null
   labels:
-    io.kompose.service: mysqlinit.d
-  name: mysqlinit.d
+    io.kompose.service: mysqlinit
+  name: mysqlinit
   namespace: default
 spec:
-  storageClassName: storage-class
+  storageClassName: st
   accessModes:
     - ReadWriteOnce
   resources:
