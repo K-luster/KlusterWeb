@@ -6,6 +6,7 @@ metadata:
     io.kompose.service: database-claim0
   name: database-claim0
 spec:
+  storageClassName: ""
   accessModes:
     - ReadWriteOnce
   resources:
