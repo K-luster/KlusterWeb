@@ -4,16 +4,13 @@ services:
   database:
     container_name: database
     image: mysql/mysql-server:8.0
-
+    volumes:
+      - mydata-volume:/app/data
     environment:
       MYSQL_ROOT_PASSWORD: rlaxogjs8312
       MYSQL_ROOT_HOST: root
       MYSQL_DATABASE: kluster
       TZ: Asia/Seoul
-
-    volumes:
-      - ./mysql-init.d:/docker-entrypoint-initdb.d
-
     ports:
       - '3306:3306'
 
@@ -32,3 +29,5 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/kluster?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rlaxogjs8312
+volumes:
+  mydata-volume:

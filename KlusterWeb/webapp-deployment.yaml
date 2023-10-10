@@ -8,6 +8,7 @@ metadata:
   labels:
     io.kompose.service: webapp
   name: webapp
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -32,7 +33,7 @@ spec:
               value: jdbc:mysql://database:3306/kluster?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
             - name: SPRING_DATASOURCE_USERNAME
               value: root
-          image: webapp
+          image: jakeheon/klusterweb
           name: kluster-app
           ports:
             - containerPort: 8080

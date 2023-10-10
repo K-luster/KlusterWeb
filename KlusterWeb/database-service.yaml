@@ -8,6 +8,7 @@ metadata:
   labels:
     io.kompose.service: database
   name: database
+  namespace: default
 spec:
   ports:
     - name: "3306"

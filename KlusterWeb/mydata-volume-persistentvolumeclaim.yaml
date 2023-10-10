@@ -3,10 +3,10 @@ kind: PersistentVolumeClaim
 metadata:
   creationTimestamp: null
   labels:
-    io.kompose.service: database-claim0
-  name: database-claim0
+    io.kompose.service: mydata-volume
+  name: mydata-volume
+  namespace: default
 spec:
-  storageClassName: ""
   accessModes:
     - ReadWriteOnce
   resources:

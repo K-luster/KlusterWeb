@@ -8,6 +8,7 @@ metadata:
   labels:
     io.kompose.service: database
   name: database
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -43,11 +44,11 @@ spec:
               protocol: TCP
           resources: {}
           volumeMounts:
-            - mountPath: /docker-entrypoint-initdb.d
-              name: database-claim0
+            - mountPath: /app/data
+              name: mydata-volume
       restartPolicy: Always
       volumes:
-        - name: database-claim0
+        - name: mydata-volume
           persistentVolumeClaim:
-            claimName: database-claim0
+            claimName: mydata-volume
 status: {}
