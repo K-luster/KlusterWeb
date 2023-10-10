@@ -12,7 +12,7 @@ services:
       MYSQL_DATABASE: kluster
       TZ: Asia/Seoul
     volumes:
-      - mysql-init.d:/docker-entrypoint-initdb.d
+      - mysqlinit.d:/docker-entrypoint-initdb.d
     ports:
       - '3306:3306'
 
@@ -32,4 +32,4 @@ services:
 #      SPRING_DATASOURCE_USERNAME: root
 #      SPRING_DATASOURCE_PASSWORD: rlaxogjs8312
 volumes:
-  mysql-init.d:
+  mysqlinit.d:
