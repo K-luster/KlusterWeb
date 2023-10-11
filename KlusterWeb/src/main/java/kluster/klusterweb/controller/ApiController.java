@@ -22,13 +22,11 @@ public class ApiController {
     private static String apiName;
     @GetMapping("/pod_list")
     public List getPods(HttpServletRequest request){
-        apiName = "pod_list";
-        return apiService.getPodResource(request.getHeader("Authorization"),RESOURCE_TYPE_POD, apiName);
+        return apiService.getPodResource(request.getHeader("Authorization"),RESOURCE_TYPE_POD, "pod_list");
     }
 
     @GetMapping("/pod_detail")
     public List getPodsDetail(HttpServletRequest request){
-        apiName = "pod_detail";
-        return apiService.getPodResource(request.getHeader("Authorization"),RESOURCE_TYPE_POD, apiName);
+        return apiService.getPodResource(request.getHeader("Authorization"),RESOURCE_TYPE_POD, "pod_detail");
     }
 }

@@ -43,11 +43,20 @@ public class ArgoService {
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public RestTemplate makeRestTemplate() throws KeyStoreException, KeyManagementException, NoSuchAlgorithmException {
+    public RestTemplate makeRestTemplate() {
         TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
-        SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
-                .loadTrustMaterial(null, acceptingTrustStrategy)
-                .build();
+        SSLContext sslContext = null;
+        try {
+            sslContext = org.apache.http.ssl.SSLContexts.custom()
+                    .loadTrustMaterial(null, acceptingTrustStrategy)
+                    .build();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        } catch (KeyManagementException e) {
+            throw new RuntimeException(e);
+        } catch (KeyStoreException e) {
+            throw new RuntimeException(e);
+        }
         SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
         CloseableHttpClient httpClient = HttpClients.custom()
                 .setSSLSocketFactory(csf)
@@ -60,7 +69,7 @@ public class ArgoService {
     }
 
 
-    public List<ArgoApplicationResponseDto> getAllApplications(String jwtToken) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    public List<ArgoApplicationResponseDto> getAllApplications(String jwtToken) {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
         Member member = memberRepository.findByEmail(email).orElseThrow(()
                 -> new RuntimeException("해당하는 이메일이 없습니다."));
@@ -83,7 +92,7 @@ public class ArgoService {
         return argoApplicationResponseDtos;
     }
 
-    public ResponseEntity<ArgoApiResponseDto> makeApplications(String jwtToken, ArgoApiRequestDto requestDto) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    public ResponseEntity<ArgoApiResponseDto> makeApplications(String jwtToken, ArgoApiRequestDto requestDto) {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
         RestTemplate restTemplate = this.makeRestTemplate();
