@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url: ENC(rlFsISSZsYgTFLgvND6qWjPivaQrngWGlgNv4z1zHy0qWShOlZFEklCHTxFODR/fJDH8b5db2GQ=)
+    username: ENC(imZ95sOQl/nQqVDrbb4R3g==)
+    password: ENC(rPZbDz8IeNprns8kaNwKAhU+Nq0oidNK)
+  jpa:
+    hibernate:
+      ddl-auto: none
+      dialect: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+    open-in-view: false
+  mvc:
+    pathmatch:
+      matching-strategy:
+        ant_path_matcher
+jwt:
+  secret: ENC(eUdHzSTENwrhm7vYM0QTZj7tMS+tqGjRb0Et0xIAO8v4dOT10IT8hSvENAEllyTE/p7QTgO9CBgQVfqXV6EEcQ==)
+jenkins:
+  url: jenkins-url
+  secret-key: jenkins-secret-key
+github:
+  access-token: ENC(vYv3EPqRGSba9sxBVZB9y2Jd4rEnfOV+vU+8r+smzrPKyU2U9B6MjNOzc58GVlF7HZZX9dMkmB4=)
+univcert:
+  api:
+    key: ENC(1srPbApQxWljVmqRnJwDuqXGjDVPxRiyp+y/kjU9WMsos/6ctSRta2Cci7J3nvaf)
+config:
+  kubernetes:
+    url: https://kluster.iptime.org:6443
+    token: ENC(R+ov+58oyty7b3pG1Jx/fSQ3fHC8W5qz+eGJTh4HVQhY37LUe0rymrPKzZv8FZrpPtxgFv+eZCgyD9NxAsSHapiuhlzG6aDM3BNoq1EsHjR8yU4/CWPKgn2v1FhZsvuzR03Uw+tXJvCFvRF/2ECVzLNIggUhtnkzb0U3aHWt8C5wNaNmOzd/8czkwlplYn6KhQYMUn1SKka2HmI2p3UbXEjVYEsLOVIMZ0th0XXd8EbY+QUYQZYtbEG3h/HpW0DTd6+0d0omn646C/ZluYiUD319Aam2t6e0VtLmo9f+9kPYu1CPNZB94ndas2Ck9qg33H1sTKsiy4ZnVDAaB2eDuDWBQg4F3fuGH6MfuWmb1Hf1BBuPQhUljwouuUgfwz/Lu6b4kHdmg/kJUZncMAL/dPpBPxiFRMM/AcPwnhR9+fh1i6AlGXOqlxXSQb7UMiiWmZaym07hK6ZUFkP5t5qPp+YqnGIX405dZLE/cmpxohEDnqqPFgfCEG1042ArMn5j+xH5JQvlgHysRWuy56SYpLqE82f7hswM+TWJAnvTnW1mxXKPvSVjwzRh6RfJgGZcojUw4fzGEQs2tAN/3/VCV4/JuE4arMi3v0i3NQJZq2RxKMi23NQ2kd5q3YG7DBaYJjETMWmF4zg5b0QaQLcueCh0WHPGB6JMcLy5O/SpPYjrPzEYdv74oEAbTy9xdAIrQoWGOVeBukYDcJ13Egd0GvCAWGLXdTL6/GdcCF4GvQ5yZVjQHR//dbelqt4gg/0IYCzYs0mPlw0aMzvLlKJ1OOafDDojokM72+ewX0+4bawx7X7KdMKAvIeeCwSZs3VulGgUPyaDZZ2GabrpbWVfbytcBGbs3opi92CZY0BTSBqIsMXvhkmNXaDSxSMl/ER4tlcNQP/lRbSyWGh256T48T01p8EF1IIpWBcu/bWabbn9PIcY+btdTCUr0Y611akS9opoQPAZ6GfqHHA1B5YaEtfss4db529Mdp/kvLegD0CFjxcvnzEbjHXyy/aBGdIoATJUy1NJk1GmLd+yr01UncpTu4HosAePECcqg7Qo+ojjkc3gH7sdusTBdvZjo73bpsD0y4v37YW894H2A+Ux7UB/LskfS1kwRfBpXtxv2EQSfg9j3wf2WiatghRzl6GlMGaboGoFoP4tuGZWKobC/tpw9TBjemlbLDmMY9dldvAceSVPl/IZzVHyFggTLNjx90EpfEaEkF8wZUEsJTct1VTbP/apOpmdD1Xtdkevta1gUufrmmMRzQ==)
+    #    token : ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklraFRUSGhPZVRaYWQwUnBiakIyZDFkTFNqSkdSakJOZVVjdFdGOUtlRUp5ZUhOVlIwWjVkRGRUTFdNaWZRLmV5SnBjM01pT2lKcmRXSmxjbTVsZEdWekwzTmxjblpwWTJWaFkyTnZkVzUwSWl3aWEzVmlaWEp1WlhSbGN5NXBieTl6WlhKMmFXTmxZV05qYjNWdWRDOXVZVzFsYzNCaFkyVWlPaUpyYkhWemRHVnlMVzVoYldWemNHRmpaU0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVmpjbVYwTG01aGJXVWlPaUp3YjJRdGRtbGxkMlZ5TFhSdmEyVnVMV3h5TlhnNUlpd2lhM1ZpWlhKdVpYUmxjeTVwYnk5elpYSjJhV05sWVdOamIzVnVkQzl6WlhKMmFXTmxMV0ZqWTI5MWJuUXVibUZ0WlNJNkluQnZaQzEyYVdWM1pYSWlMQ0pyZFdKbGNtNWxkR1Z6TG1sdkwzTmxjblpwWTJWaFkyTnZkVzUwTDNObGNuWnBZMlV0WVdOamIzVnVkQzUxYVdRaU9pSmhOekk0T0dRNFppMDBZV0l5TFRRNU56Y3RZV1l4WVMwNE1qQTJZbVUyTVRWbFlqY2lMQ0p6ZFdJaU9pSnplWE4wWlcwNmMyVnlkbWxqWldGalkyOTFiblE2YTJ4MWMzUmxjaTF1WVcxbGMzQmhZMlU2Y0c5a0xYWnBaWGRsY2lKOS5kQ2NrYks4MkM4eTJFU3FpNkJWcXp1V0tpcDRPV3RDWERILVV2WWp4MnBTekEzTTUxbFBvVnhWZjg1Y2Ixa3l6enVKdzBCdDRGMzYtQjZtRVY4U0p5YkpXSVA1V2ItYVktWndUTW1VV1JHVHlHVGJuZEo4eGNzd1QweVdPT1V1T2M4LWt0WVloMUs5QjUyRHFOaU5JekdsczlneUtJS0c3OHZqbnJCWEJCdWlKS2hHZG5NNGtXOTBXbF8zUDlXd1F6blFDUEpackFqUXl5WVQ1cWJVMzlZNF93T2NpWWdVeXhTenhxUE5xOWUtSlAxNVdKd0hOZUZWZmloYWxBX1RtTVpSQ0wxSHVZWFhielZxYnp4NXdTVzlSZTdBNkxqMEZYQl9SYmR3V09ra0tURWY5MUM5ZzVaN2JzYm9LTzdWWFVhcFM2QXlPa2ZNa2tyS2VQRnlIVFE=
+    namespace : githubactiontestcd
+argocd:
+  url: https://kluster.iptime.org:7001/api/v1
+  cookie: ENC(yhwtY5Wudxn2TKvEPzDt97LhZydxbZEebREBm+5ZyHtFB1E1i/zxRWeZdBAKyI1MhxTRRebWUex4BFnnlEzsMsMCoJIEUI6H193Po0Fyey19eE8y294IagTu0wMxPNrxhATbdT/LK4gzv8AHCbEb8eKrGyXAgq8oN2Voh2kuY4JkAM238Y+StAKsg3EskvYTMvvnmKmFUV+Jql/7w66+IDammlox1e43onm5GYX9z+EkVmFdyhE9JeF9p2YB3x2cFXYdNJXhk0E25kR+Tzvy3pgeK4OwwfWwS+IFLPNLiqHjhuVitQHpvvOpbESrQYoh0I6F/lXKvmY=)
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+    password : 5678
+#server:
+#  ssl:
+#    enabled: true
+#    key-store: klusterweb.key
+#    key-store-password: kluster!
+#    key-store-type: PKCS12
+#    key-alias: bns-ssl
+#  port: 4443
