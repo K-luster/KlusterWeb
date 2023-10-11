@@ -17,9 +17,6 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
-
-##
-KlusterWeb/src/main/resources/application-secure.yml
 ### IntelliJ IDEA ###
 .idea
 *.iws
