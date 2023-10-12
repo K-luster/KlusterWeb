@@ -1,10 +1,10 @@
 spring:
   profiles:
     include: secure
-  datasource:
-    url: ENC(XbhnumseAaQ+WkLoTd3c8pCUUOE1qLRV01csowxFMEX6PqNOAd3adJE7wpj0b6LE6/5aqV4wSas=)
-    username: ENC(zcsM8ZDJlPgE6ARZXcc30Q==)
-    password: ENC(981rpExspqHwAo0RdQdfElFcAhb7heOJ)
+#  datasource:
+#    url: ENC(XbhnumseAaQ+WkLoTd3c8pCUUOE1qLRV01csowxFMEX6PqNOAd3adJE7wpj0b6LE6/5aqV4wSas=)
+#    username: ENC(zcsM8ZDJlPgE6ARZXcc30Q==)
+#    password: ENC(981rpExspqHwAo0RdQdfElFcAhb7heOJ)
   jpa:
     hibernate:
       ddl-auto: none

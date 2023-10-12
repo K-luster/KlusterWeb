@@ -7,7 +7,6 @@ metadata:
   name: mysqlinit
   namespace: default
 spec:
-  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   resources:

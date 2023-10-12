@@ -27,9 +27,9 @@ services:
     ports:
       - 80:8080
     container_name: kluster_app
-#    environment: #환경 설정(database연결 및 profile 지정)
-#      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/kluster?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
-#      SPRING_DATASOURCE_USERNAME: root
-#      SPRING_DATASOURCE_PASSWORD: rlaxogjs8312
+    environment: #환경 설정(database연결 및 profile 지정)
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/kluster?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rlaxogjs8312
 volumes:
   mysqlinit:
