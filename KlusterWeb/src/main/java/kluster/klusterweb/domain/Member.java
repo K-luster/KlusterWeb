@@ -8,9 +8,10 @@ import javax.persistence.*;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Member {
+public class Member extends BaseTimeEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String email;
     private String password;
@@ -20,7 +21,7 @@ public class Member {
     private String dockerHubPassword;
 
     @Builder
-    public Member(String email, String password, String githubName, String githubAccessToken,String dockerHubUsername, String dockerHubPassword){
+    public Member(String email, String password, String githubName, String githubAccessToken, String dockerHubUsername, String dockerHubPassword) {
         this.email = email;
         this.password = password;
         this.githubName = githubName;
