@@ -8,14 +8,15 @@ services:
 #      - mydata-volume:/app/data
     environment:
       MYSQL_ROOT_PASSWORD: rlaxogjs8312
-      MYSQL_ROOT_HOST: root
+      MYSQL_ROOT_HOST: %
       MYSQL_DATABASE: kluster
       TZ: Asia/Seoul
     volumes:
       - mysqlinit:/docker-entrypoint-initdb.d
     ports:
       - '3306:3306'
-
+    networks:
+      - kluster_network
   webapp:
     image: jakeheon/klusterweb
     build: #image를 DockerFile 기반으로 사용한다
@@ -31,5 +32,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/kluster?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rlaxogjs8312
+    networks:
+      - kluster_network
+networks:
+  kluster_network:
 volumes:
   mysqlinit:
+
