@@ -1,41 +1,21 @@
 version: '3'
-
 services:
-  database:
-    container_name: database
-    image: mysql/mysql-server:8.0
-#    volumes:
-#      - mydata-volume:/app/data
+  spring-app:
+    image: jakeheon/klusterweb:latest
+    ports:
+      - "80:8080"
     environment:
-      MYSQL_ROOT_PASSWORD: rlaxogjs8312
-      MYSQL_ROOT_HOST: %
-      MYSQL_DATABASE: kluster
-      TZ: Asia/Seoul
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/kluster
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=rlaxogjs8312
+      - MYSQL_DATABASE=kluster
     volumes:
       - mysqlinit:/docker-entrypoint-initdb.d
-    ports:
-      - '3306:3306'
-    networks:
-      - kluster_network
-  webapp:
-    image: jakeheon/klusterweb
-    build: #image를 DockerFile 기반으로 사용한다
-      context: .    #DockerFile이 있는 디렉토리
-      dockerfile: Dockerfile    #기존에 설정해둔 DockerFile을 지정히여 build 된 jar 파일을 container에 올린다.
-    restart: always        #컨테이너 재실행
-    depends_on: #database service가 실행된 이후에 실행
-      - database
-    ports:
-      - 80:8080
-    container_name: kluster_app
-    environment: #환경 설정(database연결 및 profile 지정)
-      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/kluster?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: rlaxogjs8312
-    networks:
-      - kluster_network
-networks:
-  kluster_network:
 volumes:
   mysqlinit:
-

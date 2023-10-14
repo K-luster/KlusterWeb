@@ -6,8 +6,8 @@ metadata:
     kompose.version: 1.31.1 (HEAD)
   creationTimestamp: null
   labels:
-    io.kompose.service: webapp
-  name: webapp
+    io.kompose.service: spring-app
+  name: spring-app
   namespace: default
 spec:
   ports:
@@ -15,6 +15,6 @@ spec:
       port: 80
       targetPort: 8080
   selector:
-    io.kompose.service: webapp
+    io.kompose.service: spring-app
 status:
   loadBalancer: {}
