@@ -1,4 +1,4 @@
-package kluster.klusterweb.dto.ArgoApiDto;
+package kluster.klusterweb.dto.ArgoApi;
 
 import lombok.*;
 

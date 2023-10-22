@@ -1,4 +1,4 @@
-package kluster.klusterweb.dto.ArgoApiDto;
+package kluster.klusterweb.dto.ArgoApi;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -6,15 +6,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OperationDto {
+public class ArgoNameSpaceApplicationResponseDto {
 
-    @JsonProperty("initiatedBy")
-    private InitiatedByDto initiatedByDto;
-
-    @JsonProperty("sync")
-    private SyncDto syncDto;
+    @JsonProperty("items")
+    private List<Items> items;
 }

@@ -1,4 +1,4 @@
-package kluster.klusterweb.dto.ArgoApiDto;
+package kluster.klusterweb.dto.ArgoApi;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AutomatedDto {
+public class InitiatedByDto {
 
-    private Boolean prune;
-    private Boolean selfHeal;
+    private Boolean automated;
+
+    private String username;
 }

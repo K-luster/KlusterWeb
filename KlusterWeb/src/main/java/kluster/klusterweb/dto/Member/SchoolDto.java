@@ -1,4 +1,4 @@
-package kluster.klusterweb.dto;
+package kluster.klusterweb.dto.Member;
 
 import lombok.Builder;
 import lombok.Data;

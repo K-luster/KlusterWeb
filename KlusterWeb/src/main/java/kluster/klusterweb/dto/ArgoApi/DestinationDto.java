@@ -1,6 +1,5 @@
-package kluster.klusterweb.dto.ArgoApiDto;
+package kluster.klusterweb.dto.ArgoApi;
 
-import kluster.klusterweb.service.MemberService;
 import lombok.*;
 
 @Getter

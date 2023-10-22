@@ -1,5 +1,6 @@
-package kluster.klusterweb.dto;
+package kluster.klusterweb.dto.Pod;
 
+import kluster.klusterweb.dto.ContainerDto;
 import lombok.Builder;
 import lombok.Data;
 

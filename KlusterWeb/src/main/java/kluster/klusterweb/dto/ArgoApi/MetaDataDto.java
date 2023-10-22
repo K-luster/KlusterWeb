@@ -1,6 +1,5 @@
-package kluster.klusterweb.dto.ArgoApiDto;
+package kluster.klusterweb.dto.ArgoApi;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

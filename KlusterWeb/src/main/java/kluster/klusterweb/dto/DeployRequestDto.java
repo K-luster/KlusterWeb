@@ -1,6 +1,6 @@
 package kluster.klusterweb.dto;
 
-import kluster.klusterweb.dto.ArgoApiDto.ArgoApiRequestDto;
+import kluster.klusterweb.dto.ArgoApi.ArgoApiRequestDto;
 import lombok.Data;
 
 @Data

@@ -1,10 +1,9 @@
 package kluster.klusterweb.controller;
 
 import kluster.klusterweb.config.response.ResponseDto;
-import kluster.klusterweb.config.response.ResponseUtil;
-import kluster.klusterweb.dto.LoginDto;
-import kluster.klusterweb.dto.MemberDto;
-import kluster.klusterweb.dto.SchoolDto;
+import kluster.klusterweb.dto.Member.LoginDto;
+import kluster.klusterweb.dto.Member.MemberDto;
+import kluster.klusterweb.dto.Member.SchoolDto;
 import kluster.klusterweb.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

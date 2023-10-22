@@ -1,4 +1,4 @@
-package kluster.klusterweb.dto;
+package kluster.klusterweb.dto.Github;
 
 import lombok.Data;
 

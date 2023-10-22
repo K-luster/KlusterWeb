@@ -3,8 +3,8 @@ package kluster.klusterweb.service;
 import kluster.klusterweb.config.jwt.JwtTokenProvider;
 import kluster.klusterweb.domain.Member;
 import kluster.klusterweb.dto.ContainerDto;
-import kluster.klusterweb.dto.PodDetailDto;
-import kluster.klusterweb.dto.PodDto;
+import kluster.klusterweb.dto.Pod.PodDetailDto;
+import kluster.klusterweb.dto.Pod.PodDto;
 import kluster.klusterweb.repository.MemberRepository;
 import kluster.klusterweb.util.RestApiUtil;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Log4j2
-public class ApiService {
+public class KubernetesService {
 
     private final RestApiUtil restApiUtil;
     private final JwtTokenProvider jwtTokenProvider;

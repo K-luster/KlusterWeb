@@ -1,10 +1,8 @@
 package kluster.klusterweb.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import kluster.klusterweb.config.jwt.JwtTokenProvider;
 import kluster.klusterweb.domain.Member;
-import kluster.klusterweb.dto.ArgoApiDto.*;
+import kluster.klusterweb.dto.ArgoApi.*;
 import kluster.klusterweb.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;

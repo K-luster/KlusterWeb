@@ -1,4 +1,4 @@
-package kluster.klusterweb.dto;
+package kluster.klusterweb.dto.Pod;
 
 import lombok.*;
 
