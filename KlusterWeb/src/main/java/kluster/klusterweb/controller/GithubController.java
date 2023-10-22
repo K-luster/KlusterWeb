@@ -10,6 +10,7 @@ import kluster.klusterweb.dto.Github.RepositoryDto;
 import kluster.klusterweb.service.ArgoService;
 import kluster.klusterweb.service.GithubService;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,13 +29,10 @@ public class GithubController {
 
     @ApiOperation("레포지토리 생성합니다")
     @PostMapping("/create-repository")
-    public ResponseDto createRepository(HttpServletRequest request, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) {
-        try {
-            return ResponseUtil.SUCCESS("Github 레포지토리가 생성되었습니다.",
-                    githubService.createGitHubRepository(request.getHeader("Authorization"), repositoryName.getRepositoryName(), repositoryName.getLocalPath()));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public ResponseDto<?> createRepository(HttpServletRequest request, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) throws GitAPIException, IOException {
+        return ResponseUtil.SUCCESS("Github 레포지토리가 생성되었습니다.",
+                githubService.createGitHubRepository(request.getHeader("Authorization"), repositoryName.getRepositoryName(), repositoryName.getLocalPath()));
+
     }
 
     @ApiOperation("모든 레포지토리를 가져옵니다.")
@@ -51,14 +49,14 @@ public class GithubController {
 
     @ApiOperation("자동으로 CI 과정을 진행합니다.")
     @PostMapping("/auto-ci")
-    public ResponseDto autoCI(HttpServletRequest request, @RequestBody CommitPushDto commitPushDto) throws Exception {
+    public ResponseDto<?> autoCI(HttpServletRequest request, @RequestBody CommitPushDto commitPushDto) throws Exception {
         return ResponseUtil.SUCCESS("자동 CI 준비를 끝냈습니다",
                 githubService.autoCI(request.getHeader("Authorization"), commitPushDto.getRepositoryName(), commitPushDto.getLocalRepositoryPath(), commitPushDto.getBranchName()));
     }
 
     @ApiOperation("자동으로 CD 과정을 진행합니다.")
     @PostMapping("/auto-cd")
-    public ResponseDto autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) {
+    public ResponseDto<?> autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) {
         githubService.autoCD(
                 request.getHeader("Authorization"),
                 deployRequestDto.getLocalRepositoryPath(),
