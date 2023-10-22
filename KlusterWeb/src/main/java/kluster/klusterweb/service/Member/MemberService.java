@@ -82,7 +82,7 @@ public class MemberService {
             String message = objectMap.get("message").toString();
             ResponseUtil.FAILURE(email + " 이메일의 학교 인증이 실패했습니다.", message);
         }
-        return ResponseUtil.SUCCESS("학교 인증이 완료되었습니다.", email);
+        return ResponseUtil.SUCCESS("학교 메일이 전송되었습니다.", email);
     }
 
     public ResponseDto<?> schoolEmailCheck(String email, int code) throws IOException {

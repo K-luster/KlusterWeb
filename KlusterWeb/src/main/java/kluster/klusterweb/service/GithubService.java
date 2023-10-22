@@ -76,9 +76,16 @@ public class GithubService {
             return null;
         }
     }
-
-    public String createRepository(String jwtToken, String repositoryName, String localPath) throws IOException, GitAPIException {
+    public String createGitHubRepository(String jwtToken, String repositoryName, String localPath) throws IOException, GitAPIException {
         String githubAccessToken = getGithubAccessToken(jwtToken);
+        String githubRepoUrl = createGithubRepositoryAndGetUrl(githubAccessToken, repositoryName);
+        cloneLocalGitRepository(githubRepoUrl, localPath, githubAccessToken, repositoryName);
+        initializeAndCommitLocalGitRepository(localPath, repositoryName);
+        configureRemoteAndPush(localPath, githubRepoUrl, githubAccessToken, repositoryName);
+        return "Success";
+    }
+
+    private String createGithubRepositoryAndGetUrl(String githubAccessToken, String repositoryName) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "token " + githubAccessToken);
@@ -88,52 +95,59 @@ public class GithubService {
         try {
             ResponseEntity<String> responseEntity = restTemplate.exchange(GITHUB_REPO_URL, HttpMethod.POST, requestEntity, String.class);
         } catch (Exception exception) {
+            // 예외 처리: 리포지토리 생성 실패 또는 GitHub API 응답 실패
             exception.printStackTrace();
-            log.error("repo 생성 실패 or github API 응답 실패");
+            throw new RuntimeException("Repository creation failed or GitHub API response failed");
         }
+
         String githubUserName = getUserIdFromAccessToken(githubAccessToken);
-        String githubRepoUrl = "https://github.com/" + githubUserName + "/" + repositoryName + ".git";
-        File localRepoPath = new File(localPath + "\\" + repositoryName);
+        return "https://github.com/" + githubUserName + "/" + repositoryName + ".git";
+    }
+
+    private void cloneLocalGitRepository(String githubRepoUrl, String localPath, String githubAccessToken, String repositoryName) throws GitAPIException {
+        File localRepoPath = new File(localPath + "/" + repositoryName);
         Git.cloneRepository()
                 .setURI(githubRepoUrl)
                 .setDirectory(localRepoPath)
                 .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
                 .call();
-        try {
-            Git.init()
-                    .setDirectory(localRepoPath)
-                    .call();
-            System.out.println("Git 초기화 완료");
-        } catch (GitAPIException e) {
-            e.printStackTrace();
-            System.out.println("Git 초기화 실패");
-        }
+    }
+
+    private void initializeAndCommitLocalGitRepository(String localPath, String repositoryName) throws GitAPIException, IOException {
+        File localRepoPath = new File(localPath + "/" + repositoryName);
+        Git.init()
+                .setDirectory(localRepoPath)
+                .call();
+        System.out.println("Git 초기화 완료");
         File readmeFile = new File(localRepoPath, "README.md");
         readmeFile.createNewFile();
-
         try (Git git = Git.open(localRepoPath)) {
             git.add().addFilepattern(".").call();
             git.commit().setMessage("first commit").call();
             System.out.println("Git 커밋 성공");
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Git 커밋 실패: " + e.getMessage());
         }
-        try (Git git = Git.open(localRepoPath);) {
+    }
+
+    private void configureRemoteAndPush(String localPath, String githubRepoUrl, String githubAccessToken, String repositoryName) throws IOException {
+        File localRepoPath = new File(localPath + "/" + repositoryName);
+        Git git = Git.open(localRepoPath);
+        try {
             git.checkout()
                     .setName("main")
                     .setCreateBranch(true)
                     .call();
-            System.out.println("branch 이름 변경 성공");
+            System.out.println("브랜치 이름 변경 성공");
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("branch 이름 변경 실패");
+            throw new RuntimeException("Branch name change failed");
         }
-        try (Git git = Git.open(localRepoPath)) {
-            StoredConfig config = git.getRepository().getConfig();
-            System.out.println(git.getRepository());
-            config.setString("remote", "origin", "url", githubRepoUrl);
-            config.save();
+
+        StoredConfig config = git.getRepository().getConfig();
+        System.out.println(git.getRepository());
+        config.setString("remote", "origin", "url", githubRepoUrl);
+        config.save();
+
+        try {
             git.push()
                     .setRemote("origin")
                     .setRefSpecs(new RefSpec("refs/heads/main:refs/heads/main"))
@@ -142,9 +156,10 @@ public class GithubService {
             System.out.println("Git 푸시 완료");
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("Git 푸시 실패: " + e.getMessage());
+            throw new RuntimeException("Git push failed: " + e.getMessage());
+        } finally {
+            git.close();
         }
-        return "Success";
     }
 
     public void deleteRepository(String githubToken, String repositoryName) {

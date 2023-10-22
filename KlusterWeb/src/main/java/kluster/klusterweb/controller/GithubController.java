@@ -14,9 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 
@@ -34,7 +31,7 @@ public class GithubController {
     public ResponseDto createRepository(HttpServletRequest request, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) {
         try {
             return ResponseUtil.SUCCESS("Github 레포지토리가 생성되었습니다.",
-                    githubService.createRepository(request.getHeader("Authorization"), repositoryName.getRepositoryName(), repositoryName.getLocalPath()));
+                    githubService.createGitHubRepository(request.getHeader("Authorization"), repositoryName.getRepositoryName(), repositoryName.getLocalPath()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -61,11 +58,10 @@ public class GithubController {
 
     @ApiOperation("자동으로 CD 과정을 진행합니다.")
     @PostMapping("/auto-cd")
-    public ResponseDto autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+    public ResponseDto autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) {
         githubService.autoCD(
                 request.getHeader("Authorization"),
                 deployRequestDto.getLocalRepositoryPath(),
-                deployRequestDto.getRepositoryName(),
                 deployRequestDto.getServiceName(),
                 deployRequestDto.getReplicaCount());
         return ResponseUtil.SUCCESS("애플리케이션이 생성되었습니다.", argoService.makeApplications(request.getHeader("Authorization"), deployRequestDto.getArgoApiRequestDto()));
