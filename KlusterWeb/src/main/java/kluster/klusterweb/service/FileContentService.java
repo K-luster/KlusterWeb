@@ -1,5 +1,6 @@
 package kluster.klusterweb.service;
 
+import lombok.NoArgsConstructor;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -13,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 @Service
+@NoArgsConstructor
 public class FileContentService {
 
     public String getActionContent(String branchName, String dockerhubUsername, String dockerhubPassword, String repositoryName) {

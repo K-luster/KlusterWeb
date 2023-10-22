@@ -1,17 +1,17 @@
 spring:
   profiles:
     include: secure
-  datasource:
-    url: ENC(XbhnumseAaQ+WkLoTd3c8pCUUOE1qLRV01csowxFMEX6PqNOAd3adJE7wpj0b6LE6/5aqV4wSas=)
-    username: ENC(zcsM8ZDJlPgE6ARZXcc30Q==)
-    password: ENC(981rpExspqHwAo0RdQdfElFcAhb7heOJ)
-#  datasource: # docker-compose를 사용하기 위한 설정 파일(현재 오류)
-#    url: jdbc:mysql://mysql:3306/kluster  # MySQL 호스트 및 포트
-#    username: root
-#    password: rlaxogjs8312
+#  datasource:
+#    url: ENC(XbhnumseAaQ+WkLoTd3c8pCUUOE1qLRV01csowxFMEX6PqNOAd3adJE7wpj0b6LE6/5aqV4wSas=)
+#    username: ENC(zcsM8ZDJlPgE6ARZXcc30Q==)
+#    password: ENC(981rpExspqHwAo0RdQdfElFcAhb7heOJ)
+  datasource: # docker-compose를 사용하기 위한 설정 파일(현재 오류)
+    url: jdbc:mysql://mysql:3306/kluster  # MySQL 호스트 및 포트
+    username: root
+    password: rlaxogjs8312
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
       dialect: org.hibernate.dialect.MySQL8Dialect
     properties:
       hibernate:

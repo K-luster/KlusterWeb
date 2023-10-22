@@ -1,6 +1,7 @@
 version: '3'
 services:
   spring-app:
+    image: jakeheon/klusterweb
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,7 +11,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/kluster
     depends_on:
       - mysql
-    entrypoint: ["sh", "-c", "sleep 10 && java -jar /app.jar"]
   mysql:
     image: mysql:latest
     ports:
@@ -18,7 +18,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=rlaxogjs8312
       - MYSQL_DATABASE=kluster
-    volumes:
-      - mysqlinit:/docker-entrypoint-initdb.d
-volumes:
-  mysqlinit:
+#    volumes:
+#      - mysqlinit:/docker-entrypoint-initdb.d
+#volumes:
+#  mysqlinit:
