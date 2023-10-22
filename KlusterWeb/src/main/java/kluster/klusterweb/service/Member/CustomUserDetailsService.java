@@ -1,4 +1,4 @@
-package kluster.klusterweb.service;
+package kluster.klusterweb.service.Member;
 
 import kluster.klusterweb.domain.Member;
 import kluster.klusterweb.repository.MemberRepository;

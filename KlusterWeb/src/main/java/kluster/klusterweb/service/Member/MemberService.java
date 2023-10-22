@@ -1,4 +1,4 @@
-package kluster.klusterweb.service;
+package kluster.klusterweb.service.Member;
 
 import com.univcert.api.UnivCert;
 import kluster.klusterweb.config.jwt.JwtTokenProvider;
@@ -10,6 +10,7 @@ import kluster.klusterweb.dto.Member.LoginDto;
 import kluster.klusterweb.dto.Member.MemberDto;
 import kluster.klusterweb.dto.Member.SchoolDto;
 import kluster.klusterweb.repository.MemberRepository;
+import kluster.klusterweb.service.GithubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -9,12 +9,9 @@ import kluster.klusterweb.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONArray;
@@ -36,8 +33,8 @@ public class GithubService {
     private final String GITHUB_API_URL = "https://api.github.com/user";
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
-    private final ContentService contentService;
-    private final DeployService deployService;
+    private final CIService CIService;
+    private final CDService CDService;
 
     public String getGithubAccessToken(String jwtToken) {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
@@ -48,7 +45,6 @@ public class GithubService {
         }
         throw new RuntimeException("존재하지 않는 이메일입니다.");
     }
-
 
     public String getUserIdFromAccessToken(String githubAccessToken) {
         RestTemplate restTemplate = new RestTemplate();
@@ -151,101 +147,6 @@ public class GithubService {
         return "Success";
     }
 
-    public String continuousIntegration(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) throws Exception {
-        Member member = getMemberbyJwtToken(jwtToken);
-        String githubUsername = member.getGithubName();
-        String githubAccessToken = getGithubAccessToken(jwtToken);
-        String dockerhubUsername = member.getDockerHubUsername();
-        String dockerhubPassword = member.getDockerHubPassword();
-        // cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
-        createDevelopBranch(localRepositoryPath, branchName);
-
-        String javaDockerfileContent = String.format("FROM openjdk:11\n" +
-                "ARG JAR_FILE=*.jar\n" +
-                "COPY ${JAR_FILE} app.jar\n" +
-                "ENTRYPOINT [\"java\",\"-jar\",\"./app.jar\"]\n" +
-                "\n");
-
-        String dockerfilePath = localRepositoryPath + "/Dockerfile";
-        String commitMessage = "Add Dockerfile";
-
-        try {
-            FileWriter writer = new FileWriter(dockerfilePath);
-            writer.write(javaDockerfileContent);
-            writer.close();
-            Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
-            Git git = new Git(repository);
-            git.checkout()
-                    .setName(branchName) // 푸시할 브랜치 이름을 지정
-                    .call();
-            git.add().addFilepattern(".").call();
-            git.commit().setMessage(commitMessage).call();
-            CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
-            PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
-            pushCommand.call();
-
-            System.out.println("java Dockerfile 커밋 푸쉬 성공");
-        } catch (IOException | GitAPIException e) {
-            e.printStackTrace();
-        }
-
-        commitAndPushGithubAction(localRepositoryPath, branchName, githubAccessToken, githubUsername, dockerhubUsername, dockerhubPassword, repositoryName);
-        return "CI 성공";
-    }
-
-    public void cloneGitRepository(String repositoryName, String githubUsername, String githubAccessToken) throws GitAPIException {
-        String repositoryUrl = "https://github.com/" + githubUsername + "/" + repositoryName + ".git";
-        String localPath = "/home/ubuntu/github";
-        System.out.println(repositoryUrl);
-        Git.cloneRepository()
-                .setURI(repositoryUrl)
-                .setDirectory(new File(localPath))
-                .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
-                .call();
-    }
-
-    public void createDevelopBranch(String localRepositoryPath, String branchName) {
-        File repositoryDirectory = new File(localRepositoryPath);
-        String startPoint = "main"; // 새 브랜치의 시작 지점
-        try {
-            Git git = Git.open(repositoryDirectory);
-
-            Ref branchRef = git.branchCreate()
-                    .setName(branchName)
-                    .setStartPoint(startPoint)
-                    .call();
-            git.checkout()
-                    .setName(branchName) // 브랜치 이름 지정
-                    .call();
-            System.out.println("새로운 브랜치가 생성되었습니다:");
-            System.out.println("브랜치 이름: " + branchRef.getName());
-
-            git.close();
-        } catch (IOException | GitAPIException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public void deploy(String jwtToken, String localRepositoryPath, String repositoryName, String serviceName, String replicaCount) {
-        Member member = getMemberbyJwtToken(jwtToken);
-        String githubUsername = member.getGithubName();
-        String githubAccessToken = getGithubAccessToken(jwtToken);
-        String dockerhubUsername = member.getDockerHubUsername();
-        String dockerhubPassword = member.getDockerHubPassword();
-        deployService.commitAndPushDeployContents(localRepositoryPath, githubUsername, githubAccessToken, serviceName, replicaCount, dockerhubUsername);
-    }
-
-    public void commitAndPushGithubAction(String localRepositoryPath, String branchName, String githubAccessToken, String githubUsername, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
-        String actionContent = contentService.getActionContent(branchName, dockerhubUsername, dockerhubPassword, repositoryName);
-        String directoryPath = localRepositoryPath + "/.github/workflows"; // 디렉터리 경로 지정
-        String filePath = directoryPath + "/myworkflow.yaml"; // 파일 경로 지정
-        File directory = new File(directoryPath);
-        if (makeDir(directory)) return;
-        File file = new File(filePath);
-        makeFile(branchName, localRepositoryPath, githubAccessToken, githubUsername, actionContent, file, "Add githubActionFile");
-    }
-
     public void deleteRepository(String githubToken, String repositoryName) {
         String apiUrl = GITHUB_REPO_URL + "jake-huen/" + repositoryName;
         RestTemplate restTemplate = new RestTemplate();
@@ -260,7 +161,6 @@ public class GithubService {
             System.err.println("리포지토리 삭제 실패: " + responseEntity.getStatusCode());
         }
     }
-
 
     public List<GitHubRepository> getAllRepository(String jwtToken) throws RuntimeException, IOException {
         Member member = getMemberbyJwtToken(jwtToken);
@@ -294,5 +194,58 @@ public class GithubService {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
         return member;
+    }
+
+    public String autoCI(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) throws Exception {
+        Member member = getMemberbyJwtToken(jwtToken);
+        String githubUsername = member.getGithubName();
+        String githubAccessToken = getGithubAccessToken(jwtToken);
+        String dockerhubUsername = member.getDockerHubUsername();
+        String dockerhubPassword = member.getDockerHubPassword();
+        // cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
+        createDevelopBranch(localRepositoryPath, branchName);
+
+        CIService.addDockerfile(localRepositoryPath, branchName, githubUsername, githubAccessToken);
+        CIService.commitAndPushGithubAction(localRepositoryPath, branchName, githubAccessToken, githubUsername, dockerhubUsername, dockerhubPassword, repositoryName);
+        return "CI 성공";
+    }
+
+    public void cloneGitRepository(String repositoryName, String githubUsername, String githubAccessToken) throws GitAPIException {
+        String repositoryUrl = "https://github.com/" + githubUsername + "/" + repositoryName + ".git";
+        String localPath = "/home/ubuntu/github";
+        System.out.println(repositoryUrl);
+        Git.cloneRepository()
+                .setURI(repositoryUrl)
+                .setDirectory(new File(localPath))
+                .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
+                .call();
+    }
+
+    public void createDevelopBranch(String localRepositoryPath, String branchName) {
+        File repositoryDirectory = new File(localRepositoryPath);
+        String startPoint = "main"; // 새 브랜치의 시작 지점
+        try {
+            Git git = Git.open(repositoryDirectory);
+            Ref branchRef = git.branchCreate()
+                    .setName(branchName)
+                    .setStartPoint(startPoint)
+                    .call();
+            git.checkout()
+                    .setName(branchName) // 브랜치 이름 지정
+                    .call();
+            System.out.println("새로운 브랜치가 생성되었습니다:");
+            System.out.println("브랜치 이름: " + branchRef.getName());
+            git.close();
+        } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void autoCD(String jwtToken, String localRepositoryPath, String serviceName, String replicaCount) {
+        Member member = getMemberbyJwtToken(jwtToken);
+        String githubUsername = member.getGithubName();
+        String githubAccessToken = getGithubAccessToken(jwtToken);
+        String dockerhubUsername = member.getDockerHubUsername();
+        CDService.commitAndPushDeployContents(localRepositoryPath, githubUsername, githubAccessToken, serviceName, replicaCount, dockerhubUsername);
     }
 }

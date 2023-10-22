@@ -56,13 +56,13 @@ public class GithubController {
     @PostMapping("/auto-ci")
     public ResponseDto autoCI(HttpServletRequest request, @RequestBody CommitPushDto commitPushDto) throws Exception {
         return ResponseUtil.SUCCESS("자동 CI 준비를 끝냈습니다",
-                githubService.continuousIntegration(request.getHeader("Authorization"), commitPushDto.getRepositoryName(), commitPushDto.getLocalRepositoryPath(), commitPushDto.getBranchName()));
+                githubService.autoCI(request.getHeader("Authorization"), commitPushDto.getRepositoryName(), commitPushDto.getLocalRepositoryPath(), commitPushDto.getBranchName()));
     }
 
     @ApiOperation("자동으로 CD 과정을 진행합니다.")
     @PostMapping("/auto-cd")
     public ResponseDto autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
-        githubService.deploy(
+        githubService.autoCD(
                 request.getHeader("Authorization"),
                 deployRequestDto.getLocalRepositoryPath(),
                 deployRequestDto.getRepositoryName(),

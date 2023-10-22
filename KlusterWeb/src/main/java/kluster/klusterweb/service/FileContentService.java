@@ -1,9 +1,19 @@
 package kluster.klusterweb.service;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 @Service
-public class ContentService {
+public class FileContentService {
 
     public String getActionContent(String branchName, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
         String actionContent = String.format("\n" +
@@ -102,5 +112,43 @@ public class ContentService {
                 "    kind: Deployment\n" +
                 "    name: %s\n", serviceName, serviceName);
         return hpaTestContent;
+    }
+
+    public boolean makeDir(File directory) {
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
+                System.out.println("디렉터리가 생성되었습니다.");
+            } else {
+                System.err.println("디렉터리 생성에 실패했습니다.");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void makeFile(String branchName, String localRepositoryPath, String githubAccessToken, String githubUsername, String actionContent, File file, String commitMessage) {
+        // 파일이 존재하지 않으면 생성
+        try {
+            if (file.createNewFile()) {
+                FileWriter writer = new FileWriter(file);
+                writer.write(actionContent);
+                writer.close();
+                Repository repository = Git.open(new File(localRepositoryPath)).getRepository();
+                Git git = new Git(repository);
+                git.checkout()
+                        .setName(branchName) // 푸시할 브랜치 이름을 지정
+                        .call();
+                git.add().addFilepattern(".").call();
+                git.commit().setMessage(commitMessage).call();
+                CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
+                PushCommand pushCommand = git.push().setCredentialsProvider(credentialsProvider);
+                pushCommand.call();
+                System.out.println("파일이 생성되었습니다.");
+            } else {
+                System.err.println("파일 생성에 실패했습니다.");
+            }
+        } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
+        }
     }
 }
