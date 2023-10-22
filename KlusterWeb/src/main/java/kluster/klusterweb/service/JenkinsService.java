@@ -52,21 +52,3 @@ public class JenkinsService {
         return response;
     }
 }
-
-/**
- *
- * Job 생성 [POST]
- * http://[jenkins url]/createItem?name=[job name]
- *
- * Job 조회 [GET]
- * http://[jenkins url]/job/[job name]/api/json or xml
- *
- * Job 빌드 수행 [POST]
- * http://[jenkins url]/job/[job name]/build
- *
- * Job 빌드 결과 조회 [GET]
- * http://[jenkins url]/job/[job name]/[build number]/api/json or xml
- *
- * Job 빌드 결과 조회 - 마지막 성공 빌드 [GET]
- * http://[jenkins url]/job/[job name]/lastStableBuild/api/json or xml
-*/

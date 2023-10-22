@@ -32,25 +32,24 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final GithubService githubService;
 
-    public LoginDto.Response login(String email, String password) {
+    public ResponseDto<?> login(String email, String password) {
         Optional<Member> member = memberRepository.findByEmail(email);
         if (member.isPresent()) {
             if (passwordEncoder.matches(password, member.get().getPassword())) {
                 JwtTokenInfo tokenInfo = jwtTokenProvider.generateToken(member.get());
                 LoginDto.Response loginResponseDTO = new LoginDto.Response(email, member.get().getGithubName(), tokenInfo.getGrantType(), tokenInfo.getAccessToken());
-                return loginResponseDTO;
+                return ResponseUtil.SUCCESS("로그인 성공하였습니다.", loginResponseDTO);
             }
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+            return ResponseUtil.FAILURE("비밀번호가 일치하지 않습니다.", password);
         }
-        throw new RuntimeException("해당하는 이메일이 존재하지 않습니다.");
+        return ResponseUtil.FAILURE("해당하는 이메일이 존재하지 않습니다.", email);
     }
 
     @Transactional
-    public MemberDto signUp(String email, String password, String githubAccessToken, String dockerhubUsername, String dockerhubPassword) {
+    public ResponseDto<?> signUp(String email, String password, String githubAccessToken, String dockerhubUsername, String dockerhubPassword) {
         Optional<Member> check = memberRepository.findByEmail(email);
-        if (check.isPresent()) {
-            throw new RuntimeException("이미 존재하는 이메일입니다");
-        }
+        check.ifPresent(member -> ResponseUtil.FAILURE("이미 존재하는 이메일입니다", member.getEmail()));
+
         String githubName = githubService.getUserIdFromAccessToken(githubAccessToken);
         Member member = Member.builder()
                 .email(email)
@@ -70,24 +69,23 @@ public class MemberService {
                 .dockerHubUsername(member.getDockerHubUsername())
                 .dockerHubPassword(member.getDockerHubPassword())
                 .build();
-        return memberDto;
+        return ResponseUtil.SUCCESS("회원가입에 성공하였습니다", memberDto);
     }
 
-    public String schoolEmail(String email) throws IOException {
+    public ResponseDto<?> schoolEmail(String email) throws IOException {
         Map<String, Object> objectMap = UnivCert.certify(univCertApiKey, email, SCHOOL_NAME, true);
         String success = objectMap.get("success").toString();
         if (success.equals("false")) {
             String message = objectMap.get("message").toString();
-            throw new RuntimeException(message);
+            ResponseUtil.FAILURE(email + " 이메일의 학교 인증이 실패했습니다.", message);
         }
-        return email;
+        return ResponseUtil.SUCCESS("학교 인증이 완료되었습니다.", email);
     }
 
-    public ResponseDto schoolEmailCheck(String email, int code) throws IOException {
+    public ResponseDto<?> schoolEmailCheck(String email, int code) throws IOException {
         Map<String, Object> objectMap = UnivCert.certifyCode(univCertApiKey, email, SCHOOL_NAME, code);
         if (objectMap.get("success").toString().equals("false")) {
             String message = objectMap.get("message").toString();
-            // throw new RuntimeException(message);
             return ResponseUtil.FAILURE("학교 인증에 실패했습니다.", message);
         }
         return ResponseUtil.SUCCESS("학교 인증이 완료되었습니다.", SchoolDto.ResponseSuccess.builder()
@@ -97,7 +95,7 @@ public class MemberService {
                 .build());
     }
 
-    public String schoolEmailReset(String email) throws IOException {
+    public ResponseDto schoolEmailReset(String email) throws IOException {
         UnivCert.clear(univCertApiKey);
         return schoolEmail(email);
     }

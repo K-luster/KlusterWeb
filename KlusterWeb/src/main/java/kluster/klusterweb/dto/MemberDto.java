@@ -1,11 +1,10 @@
 package kluster.klusterweb.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Getter
 @NoArgsConstructor
 public class MemberDto {
     private String email;
@@ -17,7 +16,7 @@ public class MemberDto {
     private Boolean schoolAuthenticated;
 
     @Builder
-    public MemberDto(String email, String password, String githubName, String githubAccessToken, String dockerHubUsername, String dockerHubPassword, Boolean schoolAuthenticated){
+    public MemberDto(String email, String password, String githubName, String githubAccessToken, String dockerHubUsername, String dockerHubPassword, Boolean schoolAuthenticated) {
         this.email = email;
         this.password = password;
         this.githubName = githubName;
