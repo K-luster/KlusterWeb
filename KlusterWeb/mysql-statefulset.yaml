@@ -35,7 +35,7 @@ spec:
               protocol: TCP
           resources: {}
           volumeMounts:
-            - mountPath: /var/lib/mysql
+            - mountPath: docker-entrypoint-initdb.d
               name: mysqlinit
       restartPolicy: Always
   updateStrategy: {}
