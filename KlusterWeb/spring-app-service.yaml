@@ -2,13 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    kompose.cmd: kompose -f docker-compose.yaml convert
+    kompose.cmd: kompose -f docker-compose.yaml convert --controller statefulset
     kompose.version: 1.31.1 (HEAD)
   creationTimestamp: null
   labels:
     io.kompose.service: spring-app
   name: spring-app
 spec:
+  clusterIP: None
   ports:
     - name: "80"
       port: 80

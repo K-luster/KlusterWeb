@@ -1,8 +1,8 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   annotations:
-    kompose.cmd: kompose -f docker-compose.yaml convert
+    kompose.cmd: kompose -f docker-compose.yaml convert --controller statefulset
     kompose.version: 1.31.1 (HEAD)
   creationTimestamp: null
   labels:
@@ -13,12 +13,9 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: spring-app
-  strategy: {}
+  serviceName: spring-app
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose -f docker-compose.yaml convert
-        kompose.version: 1.31.1 (HEAD)
       creationTimestamp: null
       labels:
         io.kompose.network/klusterweb-default: "true"
@@ -36,4 +33,7 @@ spec:
               protocol: TCP
           resources: {}
       restartPolicy: Always
-status: {}
+  updateStrategy: {}
+status:
+  availableReplicas: 0
+  replicas: 0
