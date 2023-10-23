@@ -1,8 +1,8 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   annotations:
-    kompose.cmd: kompose -f docker-compose.yaml convert
+    kompose.cmd: kompose -f docker-compose.yaml convert --controller statefulset
     kompose.version: 1.31.1 (HEAD)
   creationTimestamp: null
   labels:
@@ -13,13 +13,9 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: mysql
-  strategy:
-    type: Recreate
+  serviceName: mysql
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose -f docker-compose.yaml convert
-        kompose.version: 1.31.1 (HEAD)
       creationTimestamp: null
       labels:
         io.kompose.network/klusterweb-default: "true"
@@ -39,11 +35,24 @@ spec:
               protocol: TCP
           resources: {}
           volumeMounts:
-            - mountPath: /docker-entrypoint-initdb.d
+            - mountPath: docker-entrypoint-initdb.d
               name: mysqlinit
       restartPolicy: Always
-      volumes:
-        - name: mysqlinit
-          persistentVolumeClaim:
-            claimName: mysqlinit
-status: {}
+  updateStrategy: {}
+  volumeClaimTemplates:
+    - metadata:
+        creationTimestamp: null
+        labels:
+          io.kompose.service: mysqlinit
+        name: mysqlinit
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: "local-path"
+        resources:
+          requests:
+            storage: 100Mi
+      status: {}
+status:
+  availableReplicas: 0
+  replicas: 0
