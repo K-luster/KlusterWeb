@@ -47,6 +47,13 @@ public class FileContentService {
                 "          docker login -u %s -p %s\n" +
                 "          docker build -t %s/%s -f Dockerfile .\n" +
                 "          docker push %s/%s\n" +
+                "\n" +
+                "    - name: Checkout code\n" +
+                "      uses: actions/checkout@v2\n" +
+                "\n" +
+                "    - name: Notify Server\n" +
+                "      run: |\n" +
+                "        curl -X POST -H \"Content-Type: application/json\" -d '{\"status\":\"completed\"}' http://54.180.150.131/github/notify\n" +
                 "\n", branchName, dockerhubUsername, dockerhubPassword, dockerhubUsername, repositoryName, dockerhubUsername, repositoryName);
         return actionContent;
     }

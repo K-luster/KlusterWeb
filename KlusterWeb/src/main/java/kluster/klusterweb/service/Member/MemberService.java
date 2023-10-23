@@ -43,15 +43,17 @@ public class MemberService {
                 LoginDto.Response loginResponseDTO = new LoginDto.Response(email, member.get().getGithubName(), tokenInfo.getGrantType(), tokenInfo.getAccessToken());
                 return ResponseUtil.SUCCESS("로그인 성공하였습니다.", loginResponseDTO);
             }
-            return ResponseUtil.FAILURE("비밀번호가 일치하지 않습니다.", password);
+            throw new RuntimeException("비밀번호가 일치하지 않습니다");
         }
-        return ResponseUtil.FAILURE("해당하는 이메일이 존재하지 않습니다.", email);
+        throw new RuntimeException("해당하는 이메일이 존재하지 않습니다.");
     }
 
     @Transactional
     public ResponseDto<?> signUp(String email, String password, String githubAccessToken, String dockerhubUsername, String dockerhubPassword) {
         Optional<Member> check = memberRepository.findByEmail(email);
-        check.ifPresent(member -> ResponseUtil.FAILURE("이미 존재하는 이메일입니다", member.getEmail()));
+        if (check.isPresent()) {
+            throw new RuntimeException("이미 존재하는 이메일입니다.");
+        }
 
         String githubName = githubService.getUserIdFromAccessToken(githubAccessToken);
         Member member = Member.builder()
@@ -80,7 +82,7 @@ public class MemberService {
         String success = objectMap.get("success").toString();
         if (success.equals("false")) {
             String message = objectMap.get("message").toString();
-            ResponseUtil.FAILURE(email + " 이메일의 학교 인증이 실패했습니다.", message);
+            throw new RuntimeException(email + "이메일 학교 인증이 실패했습니다.");
         }
         return ResponseUtil.SUCCESS("학교 메일이 전송되었습니다.", email);
     }
@@ -89,7 +91,7 @@ public class MemberService {
         Map<String, Object> objectMap = UnivCert.certifyCode(univCertApiKey, email, SCHOOL_NAME, code);
         if (objectMap.get("success").toString().equals("false")) {
             String message = objectMap.get("message").toString();
-            return ResponseUtil.FAILURE("학교 인증에 실패했습니다.", message);
+            throw new RuntimeException("학교 인증에 실패했습니다.");
         }
         return ResponseUtil.SUCCESS("학교 인증이 완료되었습니다.", SchoolDto.ResponseSuccess.builder()
                 .univName(objectMap.get("univName").toString())
