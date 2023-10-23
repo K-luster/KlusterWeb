@@ -9,7 +9,6 @@ metadata:
     io.kompose.service: spring-app
   name: spring-app
 spec:
-  clusterIP: None
   ports:
     - name: "80"
       port: 80
