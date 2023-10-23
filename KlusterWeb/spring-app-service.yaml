@@ -15,5 +15,5 @@ spec:
       targetPort: 8080
   selector:
     io.kompose.service: spring-app
-status:
-  loadBalancer: {}
+  type:
+    LoadBalancer
