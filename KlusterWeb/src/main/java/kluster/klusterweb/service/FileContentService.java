@@ -17,7 +17,7 @@ import java.io.IOException;
 @NoArgsConstructor
 public class FileContentService {
 
-    private static final String SERVER_URL = "http://54.180.150.131/github/action-completed"
+    private static final String SERVER_URL = "http://54.180.150.131/github/action-completed";
 
     public String getActionContent(String githubUsername, String branchName, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
         String actionContent = String.format("\n" +
