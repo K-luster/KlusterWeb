@@ -55,8 +55,8 @@ public class FileContentService {
                 "        repositoryName=%s\n" +
                 "        githubUsername=%s\n" +
                 "        serverURL=%s\n" +
-                "        curl -X POST $serverURL \\\n" +
-                "          -H \"Content-Type: application/json\" \\\n" +
+                "        curl -X POST $serverURL \n" +
+                "          -H \"Content-Type: application/json\" \n" +
                 "          -d '{\n" +
                 "            \"repositoryName\": \"'\"$repositoryName\"'\",\n" +
                 "            \"githubUsername\": \"'\"$githubUsername\"'\"\n" +
