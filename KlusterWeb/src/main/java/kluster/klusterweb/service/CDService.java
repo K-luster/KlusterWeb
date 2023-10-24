@@ -14,10 +14,11 @@ public class CDService {
 
     private final FileContentService fileContentService;
 
-    public void commitAndPushDeployContents(String localRepositoryPath, String githubUsername, String githubAccessToken, String serviceName, String replicaCount, String dockerhubUsername) {
+    public Boolean commitAndPushDeployContents(String localRepositoryPath, String githubUsername, String githubAccessToken, String serviceName, String replicaCount, String dockerhubUsername) {
         commitAndPushDeploymentYml(localRepositoryPath, githubUsername, githubAccessToken, serviceName, replicaCount, dockerhubUsername);
         commitAndPushServiceYml(localRepositoryPath, githubUsername, githubAccessToken, serviceName);
         commitAndPushHpaTestYml(localRepositoryPath, githubUsername, githubAccessToken, serviceName);
+        return Boolean.TRUE;
     }
 
     private void commitAndPushDeploymentYml(String localRepositoryPath, String githubUsername, String githubAccessToken, String serviceName, String replicaCount, String dockerhubUsername) {

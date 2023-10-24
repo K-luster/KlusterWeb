@@ -17,7 +17,9 @@ import java.io.IOException;
 @NoArgsConstructor
 public class FileContentService {
 
-    public String getActionContent(String branchName, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
+    private static final String SERVER_URL = "http://54.180.150.131/github/action-completed"
+
+    public String getActionContent(String githubUsername, String branchName, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
         String actionContent = String.format("\n" +
                 "name: CI with Gradle\n" +
                 "\n" +
@@ -48,13 +50,18 @@ public class FileContentService {
                 "          docker build -t %s/%s -f Dockerfile .\n" +
                 "          docker push %s/%s\n" +
                 "\n" +
-                "    - name: Checkout code\n" +
-                "      uses: actions/checkout@v2\n" +
-                "\n" +
-                "    - name: Notify Server\n" +
+                "    - name: CI 완료 알려주기\n" +
                 "      run: |\n" +
-                "        curl -X POST -H \"Content-Type: application/json\" -d '{\"status\":\"completed\"}' http://54.180.150.131/github/notify\n" +
-                "\n", branchName, dockerhubUsername, dockerhubPassword, dockerhubUsername, repositoryName, dockerhubUsername, repositoryName);
+                "        repositoryName=%s\n" +
+                "        githubUsername=%s\n" +
+                "        serverURL=%s\n" +
+                "        curl -X POST $serverURL \\\n" +
+                "          -H \"Content-Type: application/json\" \\\n" +
+                "          -d '{\n" +
+                "            \"repositoryName\": \"'\"$repositoryName\"'\",\n" +
+                "            \"githubUsername\": \"'\"$githubUsername\"'\"\n" +
+                "          }\n" +
+                "\n", branchName, dockerhubUsername, dockerhubPassword, dockerhubUsername, repositoryName, dockerhubUsername, repositoryName, repositoryName, githubUsername, SERVER_URL);
         return actionContent;
     }
 

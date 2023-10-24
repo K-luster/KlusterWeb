@@ -3,10 +3,13 @@ package kluster.klusterweb.controller;
 import io.swagger.annotations.ApiOperation;
 import kluster.klusterweb.config.response.ResponseDto;
 import kluster.klusterweb.config.response.ResponseUtil;
+import kluster.klusterweb.domain.Project;
 import kluster.klusterweb.dto.*;
+import kluster.klusterweb.dto.Github.ActionCompletedDto;
 import kluster.klusterweb.dto.Github.CommitPushDto;
 import kluster.klusterweb.dto.Github.GitHubRepository;
 import kluster.klusterweb.dto.Github.RepositoryDto;
+import kluster.klusterweb.repository.ProjectRepository;
 import kluster.klusterweb.service.ArgoService;
 import kluster.klusterweb.service.GithubService;
 import lombok.RequiredArgsConstructor;
@@ -54,22 +57,24 @@ public class GithubController {
                 githubService.autoCI(request.getHeader("Authorization"), commitPushDto.getRepositoryName(), commitPushDto.getLocalRepositoryPath(), commitPushDto.getBranchName()));
     }
 
-    @PostMapping("/notify")
-    public String receiveNotification() {
-        // 여기에서 알림 수신 후 수행할 작업을 구현
-        System.out.println("GithubController.receiveNotification");
-        System.out.println("알려주세요!!!!");
-        return "Notification received";
+    // github action에서 보내는 POST API
+    @PostMapping("/action-completed")
+    public ResponseDto<?> receiveNotification(@RequestBody ActionCompletedDto actionCompletedDto) {
+        return ResponseUtil.SUCCESS("Action 완료", githubService.actionCompleted(actionCompletedDto.getUserName(), actionCompletedDto.getRepositoryName()));
     }
 
     @ApiOperation("자동으로 CD 과정을 진행합니다.")
     @PostMapping("/auto-cd")
     public ResponseDto<?> autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) {
-        githubService.autoCD(
+        Boolean fileAdd = githubService.autoCD(
                 request.getHeader("Authorization"),
                 deployRequestDto.getLocalRepositoryPath(),
                 deployRequestDto.getServiceName(),
                 deployRequestDto.getReplicaCount());
-        return ResponseUtil.SUCCESS("애플리케이션이 생성되었습니다.", argoService.makeApplications(request.getHeader("Authorization"), deployRequestDto.getArgoApiRequestDto()));
+        if (fileAdd) {
+            return ResponseUtil.SUCCESS("애플리케이션이 생성되었습니다.", argoService.makeApplications(request.getHeader("Authorization"), deployRequestDto.getArgoApiRequestDto()));
+        } else {
+            return ResponseUtil.FAILURE("아직 CI과정이 완료되지 않았습니다.", null);
+        }
     }
 }
