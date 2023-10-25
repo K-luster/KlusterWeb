@@ -218,11 +218,13 @@ public class GithubService {
 
     public String autoCI(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) throws Exception {
         Member member = getMemberbyJwtToken(jwtToken);
+
         String githubUsername = member.getGithubName();
         String githubAccessToken = getGithubAccessToken(jwtToken);
         String dockerhubUsername = member.getDockerHubUsername();
         String dockerhubPassword = member.getDockerHubPassword();
-        // cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
+
+        cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
         createDevelopBranch(localRepositoryPath, branchName);
         CIService.saveProject(member, repositoryName);
         CIService.addDockerfile(localRepositoryPath, branchName, githubUsername, githubAccessToken);
@@ -232,13 +234,44 @@ public class GithubService {
 
     public void cloneGitRepository(String repositoryName, String githubUsername, String githubAccessToken) throws GitAPIException {
         String repositoryUrl = "https://github.com/" + githubUsername + "/" + repositoryName + ".git";
-        String localPath = "/home/ubuntu/github";
+        String localPath = "/app/" + repositoryName;
         System.out.println(repositoryUrl);
-        Git.cloneRepository()
-                .setURI(repositoryUrl)
-                .setDirectory(new File(localPath))
-                .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
-                .call();
+//        try{
+//            ProcessBuilder processBuilder = new ProcessBuilder();
+//            processBuilder.command("git", "clone", repositoryUrl, localPath);
+//            Process process = processBuilder.start();
+//
+//            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+//            String line;
+//            while (true) {
+//                line = reader.readLine();
+//                if (line == null) {
+//                    break;
+//                }
+//                System.out.println(line);
+//            }
+
+//            int exitCode = process.waitFor();
+//            if (exitCode == 0){
+//                System.out.println("Repository Cloned Successfully.");
+//            }
+//            else{
+//                System.out.println("Error occured");
+//            }
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+        try {
+            Git.cloneRepository()
+                    .setURI(repositoryUrl)
+                    .setDirectory(new File(localPath))
+                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
+                    .call();
+            System.out.println("Repository clone success");
+        }
+        catch (GitAPIException e){
+            System.out.println("Exception occured" + e);
+        }
     }
 
     public void createDevelopBranch(String localRepositoryPath, String branchName) {
