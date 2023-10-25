@@ -83,7 +83,7 @@ public class DockerComposeService {
         try {
             // Define the kompose command
             String namespace = String.format("--namespace=%s", githubUsername);
-            String[] commandArgs = {"kompose","-f", "docker-compose.yaml", namespace, "convert"};
+            String[] commandArgs = {"/bin/bash", "kompose", "-f", "docker-compose.yaml", namespace, "convert"};
             System.out.println("DockerComposeService.composeBuilder1");
             // Create a ProcessBuilder
             ProcessBuilder processBuilder = new ProcessBuilder(commandArgs);
