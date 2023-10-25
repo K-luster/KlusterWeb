@@ -10,13 +10,11 @@ metadata:
   name: spring-app
   namespace: server
 spec:
-  clusterIP: None
   ports:
     - name: "80"
       port: 80
       targetPort: 8080
   selector:
     io.kompose.service: spring-app
-  type: ClusterIP
-status:
-  loadBalancer: {}
+  type: LoadBalancer
+
