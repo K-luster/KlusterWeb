@@ -1,5 +1,8 @@
 package kluster.klusterweb.service;
 
+import kluster.klusterweb.domain.Member;
+import kluster.klusterweb.domain.Project;
+import kluster.klusterweb.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
@@ -18,9 +21,31 @@ import java.io.IOException;
 public class CIService {
 
     private final FileContentService fileContentService;
+    private final ProjectRepository projectRepository;
+
+    public void saveProject(Member member, String repositoryName) {
+        Project project = Project.builder()
+                .name(repositoryName)
+                .isCI(Boolean.FALSE)
+                .isCD(Boolean.FALSE)
+                .member(member).build();
+        projectRepository.save(project);
+    }
+
+    public Boolean isCICompleted(Member member, String repositoryName) {
+        Project project = projectRepository.findByMemberIdAndName(member.getId(), repositoryName);
+        if (project == null) {
+            throw new RuntimeException("해당하는 프로젝트 찾을 수 없습니다.");
+        }
+        if (project.getIsCI().equals(Boolean.TRUE)) {
+            return Boolean.TRUE;
+        } else {
+            return Boolean.FALSE;
+        }
+    }
 
     public void commitAndPushGithubAction(String localRepositoryPath, String branchName, String githubAccessToken, String githubUsername, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
-        String actionContent = fileContentService.getActionContent(branchName, dockerhubUsername, dockerhubPassword, repositoryName);
+        String actionContent = fileContentService.getActionContent(githubUsername, branchName, dockerhubUsername, dockerhubPassword, repositoryName);
         String directoryPath = localRepositoryPath + "/.github/workflows"; // 디렉터리 경로 지정
         String filePath = directoryPath + "/myworkflow.yaml"; // 파일 경로 지정
         File directory = new File(directoryPath);

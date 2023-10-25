@@ -2,12 +2,13 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   annotations:
-    kompose.cmd: kompose -f docker-compose.yaml convert --controller statefulset
+    kompose.cmd: kompose -f docker-compose.yaml --namespace=server --controller statefulset convert
     kompose.version: 1.31.1 (HEAD)
   creationTimestamp: null
   labels:
     io.kompose.service: spring-app
   name: spring-app
+  namespace: server
 spec:
   replicas: 1
   selector:

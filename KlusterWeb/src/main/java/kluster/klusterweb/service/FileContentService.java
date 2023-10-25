@@ -17,7 +17,9 @@ import java.io.IOException;
 @NoArgsConstructor
 public class FileContentService {
 
-    public String getActionContent(String branchName, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
+    private static final String SERVER_URL = "http://54.180.150.131/github/action-completed";
+
+    public String getActionContent(String githubUsername, String branchName, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
         String actionContent = String.format("\n" +
                 "name: CI with Gradle\n" +
                 "\n" +
@@ -47,7 +49,19 @@ public class FileContentService {
                 "          docker login -u %s -p %s\n" +
                 "          docker build -t %s/%s -f Dockerfile .\n" +
                 "          docker push %s/%s\n" +
-                "\n", branchName, dockerhubUsername, dockerhubPassword, dockerhubUsername, repositoryName, dockerhubUsername, repositoryName);
+                "\n" +
+                "    - name: CI 완료 알려주기\n" +
+                "      run: |\n" +
+                "        repositoryName=%s\n" +
+                "        githubUsername=%s\n" +
+                "        serverURL=%s\n" +
+                "        curl -X POST $serverURL \n" +
+                "          -H \"Content-Type: application/json\" \n" +
+                "          -d {\n" +
+                "            \"repositoryName\": \"'\"$repositoryName\"'\",\n" +
+                "            \"githubUsername\": \"'\"$githubUsername\"'\"\n" +
+                "          }\n" +
+                "\n", branchName, dockerhubUsername, dockerhubPassword, dockerhubUsername, repositoryName, dockerhubUsername, repositoryName, repositoryName, githubUsername, SERVER_URL);
         return actionContent;
     }
 
@@ -114,6 +128,30 @@ public class FileContentService {
                 "    kind: Deployment\n" +
                 "    name: %s\n", serviceName, serviceName);
         return hpaTestContent;
+    }
+
+    public String getDockerComposeCIContent(String repositoryName, String githubUsername) {
+        String dockerComposeCIContent = String.format("name: Kompose Convert on Main Branch\n" +
+                "\n" +
+                "on:\n" +
+                "  push:\n" +
+                "    branches:\n" +
+                "      - develop\n" +
+                "\n" +
+                "jobs:\n" +
+                "  kompose-convert:\n" +
+                "    runs-on: ubuntu-latest\n" +
+                "\n" +
+                "    steps:\n" +
+                "    - name: Checkout Repository\n" +
+                "      uses: actions/checkout@v2\n" +
+                "\n" +
+                "    # Add additional steps here to deploy the generated Kubernetes resources.\n" +
+                "    - name: CI Completed\n" +
+                "      run:  |\n" +
+                "        curl -H \"Content-Type: application/json\" -d '{ \"repositoryName\": \"%s\", \"githubUsername\": \"%s\"}' -X POST %s\n",
+                repositoryName, githubUsername, SERVER_URL);
+        return dockerComposeCIContent;
     }
 
     public boolean makeDir(File directory) {
