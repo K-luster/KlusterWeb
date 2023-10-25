@@ -84,20 +84,20 @@ public class DockerComposeService {
             // Define the kompose command
             String komposeCommand = "kompose";
             String[] commandArgs = {"convert", "-f", "docker-compose.yaml", "--namespace", githubUsername};
-
+            System.out.println("DockerComposeService.composeBuilder1");
             // Create a ProcessBuilder
             ProcessBuilder processBuilder = new ProcessBuilder(komposeCommand);
             processBuilder.command(commandArgs);
-
+            System.out.println("DockerComposeService.composeBuilder2");
             // Set the working directory (where your Docker Compose file is located)
             processBuilder.directory(new File("/app/" + repositoryName));
-
+            System.out.println("DockerComposeService.composeBuilder3");
             // Redirect the standard error stream
             processBuilder.redirectErrorStream(true);
-
+            System.out.println("DockerComposeService.composeBuilder4");
             // Start the process
             Process process = processBuilder.start();
-
+            System.out.println("DockerComposeService.composeBuilder5");
             // Read and print the output
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
