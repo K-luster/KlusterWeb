@@ -57,7 +57,7 @@ public class FileContentService {
                 "        serverURL=%s\n" +
                 "        curl -X POST $serverURL \n" +
                 "          -H \"Content-Type: application/json\" \n" +
-                "          -d '{\n" +
+                "          -d {\n" +
                 "            \"repositoryName\": \"'\"$repositoryName\"'\",\n" +
                 "            \"githubUsername\": \"'\"$githubUsername\"'\"\n" +
                 "          }\n" +
@@ -136,7 +136,7 @@ public class FileContentService {
                 "on:\n" +
                 "  push:\n" +
                 "    branches:\n" +
-                "      - main\n" +
+                "      - develop\n" +
                 "\n" +
                 "jobs:\n" +
                 "  kompose-convert:\n" +
@@ -148,7 +148,7 @@ public class FileContentService {
                 "\n" +
                 "    - name: Install Kompose\n" +
                 "      run: |\n" +
-                "        curl -L https://github.com/kubernetes/kompose/releases/download/v1.26.0/kompose-linux-amd64 -o kompose\n" +
+                "        curl -L https://github.com/kubernetes/kompose/releases/download/v1.31.0/kompose-linux-amd64 -o kompose\n" +
                 "        chmod +x kompose\n" +
                 "        sudo mv kompose /usr/local/bin/\n" +
                 "\n" +
@@ -157,13 +157,9 @@ public class FileContentService {
                 "\n" +
                 "    # Add additional steps here to deploy the generated Kubernetes resources.\n" +
                 "    - name: CI 완료 알려주기\n" +
-                "      run: |\n" +
-                "        curl -X POST %s \n" +
-                "          -H \"Content-Type: application/json\" \n" +
-                "          -d '{\n" +
-                "            repositoryName: %s\n" +
-                "            githubUsername: %s\n" +
-                "          }\n", githubUsername, SERVER_URL, repositoryName, githubUsername);
+                "      run:  |\n" +
+                        "curl -H \"Content-Type: application/json\" -d '{ \"repositoryName\": \"%s\", \"githubUsername\": \"%s\"}' -X POST %s\n",
+                githubUsername, repositoryName, githubUsername, SERVER_URL);
         return dockerComposeCIContent;
     }
 

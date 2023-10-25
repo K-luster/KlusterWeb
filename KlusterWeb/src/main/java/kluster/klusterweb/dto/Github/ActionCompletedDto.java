@@ -6,6 +6,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class ActionCompletedDto {
-    private final String userName;
+    private final String githubUsername;
     private final String repositoryName;
 }

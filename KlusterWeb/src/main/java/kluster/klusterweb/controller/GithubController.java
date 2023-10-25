@@ -60,7 +60,7 @@ public class GithubController {
     // github action에서 보내는 POST API
     @PostMapping("/action-completed")
     public ResponseDto<?> receiveNotification(@RequestBody ActionCompletedDto actionCompletedDto) {
-        return ResponseUtil.SUCCESS("Action 완료", githubService.actionCompleted(actionCompletedDto.getUserName(), actionCompletedDto.getRepositoryName()));
+        return ResponseUtil.SUCCESS("Action 완료", githubService.actionCompleted(actionCompletedDto.getGithubUsername(), actionCompletedDto.getRepositoryName()));
     }
 
     @ApiOperation("자동으로 CD 과정을 진행합니다.")
