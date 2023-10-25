@@ -147,10 +147,10 @@ public class FileContentService {
                 "      uses: actions/checkout@v2\n" +
                 "\n" +
                 "    # Add additional steps here to deploy the generated Kubernetes resources.\n" +
-                "    - name: CI 완료 알려주기\n" +
+                "    - name: CI Completed\n" +
                 "      run:  |\n" +
                 "        curl -H \"Content-Type: application/json\" -d '{ \"repositoryName\": \"%s\", \"githubUsername\": \"%s\"}' -X POST %s\n",
-                githubUsername, repositoryName, githubUsername, SERVER_URL);
+                repositoryName, githubUsername, SERVER_URL);
         return dockerComposeCIContent;
     }
 
