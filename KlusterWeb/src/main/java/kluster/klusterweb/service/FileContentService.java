@@ -158,15 +158,12 @@ public class FileContentService {
                 "    # Add additional steps here to deploy the generated Kubernetes resources.\n" +
                 "    - name: CI 완료 알려주기\n" +
                 "      run: |\n" +
-                "        repositoryName=%s\n" +
-                "        githubUsername=%s\n" +
-                "        serverURL=%s\n" +
-                "        curl -X POST $serverURL \n" +
+                "        curl -X POST %s \n" +
                 "          -H \"Content-Type: application/json\" \n" +
                 "          -d '{\n" +
-                "            \"repositoryName\": \"'\"$repositoryName\"'\",\n" +
-                "            \"githubUsername\": \"'\"$githubUsername\"'\"\n" +
-                "          }\n", githubUsername, repositoryName, githubUsername);
+                "            repositoryName: %s\n" +
+                "            githubUsername: %s\n" +
+                "          }\n", githubUsername, SERVER_URL, repositoryName, githubUsername);
         return dockerComposeCIContent;
     }
 
