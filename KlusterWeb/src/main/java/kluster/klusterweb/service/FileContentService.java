@@ -146,19 +146,10 @@ public class FileContentService {
                 "    - name: Checkout Repository\n" +
                 "      uses: actions/checkout@v2\n" +
                 "\n" +
-                "    - name: Install Kompose\n" +
-                "      run: |\n" +
-                "        curl -L https://github.com/kubernetes/kompose/releases/download/v1.31.0/kompose-linux-amd64 -o kompose\n" +
-                "        chmod +x kompose\n" +
-                "        sudo mv kompose /usr/local/bin/\n" +
-                "\n" +
-                "    - name: Convert Docker Compose to Kubernetes Resources\n" +
-                "      run: kompose convert -f docker-compose.yaml --namespace %s\n" +
-                "\n" +
                 "    # Add additional steps here to deploy the generated Kubernetes resources.\n" +
                 "    - name: CI 완료 알려주기\n" +
                 "      run:  |\n" +
-                        "curl -H \"Content-Type: application/json\" -d '{ \"repositoryName\": \"%s\", \"githubUsername\": \"%s\"}' -X POST %s\n",
+                "        curl -H \"Content-Type: application/json\" -d '{ \"repositoryName\": \"%s\", \"githubUsername\": \"%s\"}' -X POST %s\n",
                 githubUsername, repositoryName, githubUsername, SERVER_URL);
         return dockerComposeCIContent;
     }

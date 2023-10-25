@@ -6,6 +6,7 @@ import kluster.klusterweb.config.response.ResponseUtil;
 import kluster.klusterweb.dto.Github.CommitPushDto;
 import kluster.klusterweb.service.DockerComposeService;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +21,7 @@ public class DockerComposeController {
 
     @ApiOperation("Docker-compose가 있는 경우의 CI 과정을 진행합니다.")
     @PostMapping("/auto-ci")
-    public ResponseDto<?> dockerComposeAutoCI(HttpServletRequest request, @RequestBody CommitPushDto commitPushDto) {
+    public ResponseDto<?> dockerComposeAutoCI(HttpServletRequest request, @RequestBody CommitPushDto commitPushDto) throws GitAPIException {
         return ResponseUtil.SUCCESS("Docker-compose 자동 CI가 진행됩니다.", dockerComposeService.dockerComposeCI(
                 request.getHeader("Authorization"),
                 commitPushDto.getRepositoryName(),

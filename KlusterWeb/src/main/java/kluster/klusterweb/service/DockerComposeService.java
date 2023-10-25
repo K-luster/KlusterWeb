@@ -10,8 +10,10 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Optional;
 
 @Service
@@ -24,6 +26,7 @@ public class DockerComposeService {
     private final MemberRepository memberRepository;
     private final FileContentService fileContentService;
     private final CIService ciService;
+    private final GithubService githubService;
     private final ProjectRepository projectRepository;
 
     private Member getMemberbyJwtToken(String jwtToken) {
@@ -62,16 +65,53 @@ public class DockerComposeService {
         }
     }
 
-    public String dockerComposeCI(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) {
+    public String dockerComposeCI(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) throws GitAPIException {
         Member member = getMemberbyJwtToken(jwtToken);
         String githubUsername = member.getGithubName();
         String githubAccessToken = getGithubAccessToken(jwtToken);
         String dockerhubUsername = member.getDockerHubUsername();
         String dockerhubPassword = member.getDockerHubPassword();
+        githubService.cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
+        composeBuilder(githubUsername, repositoryName);
         createDevelopBranch(localRepositoryPath, branchName);
         changeKompose(localRepositoryPath, branchName, githubAccessToken, githubUsername, dockerhubUsername, dockerhubPassword, repositoryName);
         ciService.saveProject(member, repositoryName);
         return "Action 완료";
+    }
+
+    private void composeBuilder(String githubUsername, String repositoryName) {
+        try {
+            // Define the kompose command
+            String komposeCommand = "kompose";
+            String[] commandArgs = {"convert", "-f", "docker-compose.yaml", "--namespace", githubUsername};
+
+            // Create a ProcessBuilder
+            ProcessBuilder processBuilder = new ProcessBuilder(komposeCommand);
+            processBuilder.command(commandArgs);
+
+            // Set the working directory (where your Docker Compose file is located)
+            processBuilder.directory(new File("/app/" + repositoryName));
+
+            // Redirect the standard error stream
+            processBuilder.redirectErrorStream(true);
+
+            // Start the process
+            Process process = processBuilder.start();
+
+            // Read and print the output
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            // Wait for the process to complete
+            int exitCode = process.waitFor();
+            System.out.println("Process exited with code " + exitCode);
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void changeKompose(String localRepositoryPath, String branchName, String githubAccessToken, String githubUsername, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
