@@ -19,6 +19,6 @@ services:
       - MYSQL_ROOT_PASSWORD=rlaxogjs8312
       - MYSQL_DATABASE=kluster
     volumes:
-      - mysqlinit:/docker-entrypoint-initdb.d
+      - mysqlinit:/var/lib/mysql
 volumes:
   mysqlinit:
