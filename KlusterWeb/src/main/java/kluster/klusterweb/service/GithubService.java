@@ -242,11 +242,11 @@ public class GithubService {
     }
 
     public void createDevelopBranch(String localRepositoryPath, String branchName) {
-        File repositoryDirectory = new File(localRepositoryPath);
-        String startPoint = "main"; // 새 브랜치의 시작 지점
-        try {
-            Git git = Git.open(repositoryDirectory);
-            Ref branchRef = git.branchCreate()
+                File repositoryDirectory = new File(localRepositoryPath);
+                String startPoint = "main"; // 새 브랜치의 시작 지점
+                try {
+                    Git git = Git.open(repositoryDirectory);
+                    Ref branchRef = git.branchCreate()
                     .setName(branchName)
                     .setStartPoint(startPoint)
                     .call();

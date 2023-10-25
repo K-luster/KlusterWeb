@@ -130,6 +130,46 @@ public class FileContentService {
         return hpaTestContent;
     }
 
+    public String getDockerComposeCIContent(String repositoryName, String githubUsername) {
+        String dockerComposeCIContent = String.format("name: Kompose Convert on Main Branch\n" +
+                "\n" +
+                "on:\n" +
+                "  push:\n" +
+                "    branches:\n" +
+                "      - main\n" +
+                "\n" +
+                "jobs:\n" +
+                "  kompose-convert:\n" +
+                "    runs-on: ubuntu-latest\n" +
+                "\n" +
+                "    steps:\n" +
+                "    - name: Checkout Repository\n" +
+                "      uses: actions/checkout@v2\n" +
+                "\n" +
+                "    - name: Install Kompose\n" +
+                "      run: |\n" +
+                "        curl -L https://github.com/kubernetes/kompose/releases/download/v1.26.0/kompose-linux-amd64 -o kompose\n" +
+                "        chmod +x kompose\n" +
+                "        sudo mv kompose /usr/local/bin/\n" +
+                "\n" +
+                "    - name: Convert Docker Compose to Kubernetes Resources\n" +
+                "      run: kompose convert -f docker-compose.yaml --namespace %s\n" +
+                "\n" +
+                "    # Add additional steps here to deploy the generated Kubernetes resources.\n" +
+                "    - name: CI 완료 알려주기\n" +
+                "      run: |\n" +
+                "        repositoryName=%s\n" +
+                "        githubUsername=%s\n" +
+                "        serverURL=%s\n" +
+                "        curl -X POST $serverURL \n" +
+                "          -H \"Content-Type: application/json\" \n" +
+                "          -d '{\n" +
+                "            \"repositoryName\": \"'\"$repositoryName\"'\",\n" +
+                "            \"githubUsername\": \"'\"$githubUsername\"'\"\n" +
+                "          }\n", githubUsername, repositoryName, githubUsername);
+        return dockerComposeCIContent;
+    }
+
     public boolean makeDir(File directory) {
         if (!directory.exists()) {
             if (directory.mkdirs()) {

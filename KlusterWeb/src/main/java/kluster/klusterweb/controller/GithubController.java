@@ -53,7 +53,7 @@ public class GithubController {
     @ApiOperation("자동으로 CI 과정을 진행합니다.")
     @PostMapping("/auto-ci")
     public ResponseDto<?> autoCI(HttpServletRequest request, @RequestBody CommitPushDto commitPushDto) throws Exception {
-        return ResponseUtil.SUCCESS("자동 CI 준비를 끝냈습니다",
+        return ResponseUtil.SUCCESS("자동 CI를 진행합니다",
                 githubService.autoCI(request.getHeader("Authorization"), commitPushDto.getRepositoryName(), commitPushDto.getLocalRepositoryPath(), commitPushDto.getBranchName()));
     }
 
@@ -72,7 +72,7 @@ public class GithubController {
                 deployRequestDto.getServiceName(),
                 deployRequestDto.getReplicaCount());
         if (fileAdd) {
-            return ResponseUtil.SUCCESS("애플리케이션이 생성되었습니다.", argoService.makeApplications(request.getHeader("Authorization"), deployRequestDto.getArgoApiRequestDto()));
+            return ResponseUtil.SUCCESS("배포된 애플리케이션이 생성되었습니다.", argoService.makeApplications(request.getHeader("Authorization"), deployRequestDto.getArgoApiRequestDto()));
         } else {
             return ResponseUtil.FAILURE("아직 CI과정이 완료되지 않았습니다.", null);
         }
