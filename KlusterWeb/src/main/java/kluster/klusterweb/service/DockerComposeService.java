@@ -81,33 +81,19 @@ public class DockerComposeService {
 
     private void composeBuilder(String githubUsername, String repositoryName) {
         try {
-            // Define the kompose command
             String namespace = String.format("--namespace=%s", githubUsername);
             String[] commandArgs = {"kompose", "-f", "docker-compose.yaml", namespace, "--controller","statefulset","convert"};
-            System.out.println("DockerComposeService.composeBuilder1");
-            // Create a ProcessBuilder
             ProcessBuilder processBuilder = new ProcessBuilder(commandArgs);
-            System.out.println("DockerComposeService.composeBuilder2");
-            // Set the working directory (where your Docker Compose file is located)
             processBuilder.directory(new File("/app/" + repositoryName));
-            System.out.println("DockerComposeService.composeBuilder3");
-            // Redirect the standard error stream
             processBuilder.redirectErrorStream(true);
-            System.out.println("DockerComposeService.composeBuilder4");
             System.out.println("processBuilder = " + processBuilder);
-            // Start the process
             Process process = processBuilder.start();
-            System.out.println("DockerComposeService.composeBuilder5");
-            // Read and print the output
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
             }
-
-            // Wait for the process to complete
-            int exitCode = process.waitFor();
-            System.out.println("Process exited with code " + exitCode);
+            process.waitFor();
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
