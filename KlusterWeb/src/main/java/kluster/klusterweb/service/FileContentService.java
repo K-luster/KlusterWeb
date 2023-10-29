@@ -17,7 +17,8 @@ import java.io.IOException;
 @NoArgsConstructor
 public class FileContentService {
 
-    private static final String SERVER_URL = "http://54.180.150.131/github/action-completed";
+    // private static final String SERVER_URL = "http://54.180.150.131/github/action-completed"; // EC2 주소
+    private static final String SERVER_URL = "http://kluster.iptime.org:7002/github/action-completed"; // ArgoCD 주소
 
     public String getActionContent(String githubUsername, String branchName, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
         String actionContent = String.format("\n" +

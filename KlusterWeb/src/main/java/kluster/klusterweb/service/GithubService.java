@@ -299,13 +299,7 @@ public class GithubService {
         String githubUsername = member.getGithubName();
         String githubAccessToken = getGithubAccessToken(jwtToken);
         String dockerhubUsername = member.getDockerHubUsername();
-        Project project1 = Project.builder()
-                .name("testtesst122")
-                .isCI(Boolean.FALSE)
-                .isCD(Boolean.FALSE)
-                .member(member).build();
-        projectRepository.save(project1);
-        Project project = projectRepository.findByMemberIdAndName(member.getId(), member.getGithubName());
+        Project project = projectRepository.findByMemberIdAndName(member.getId(), member.getGithubName()).orElseThrow(() -> new RuntimeException("아직 CI과정이 완료되지 않았습니다."));
         System.out.println("project = " + project);
         if (CIService.isCICompleted(member, serviceName)) {
             return CDService.commitAndPushDeployContents(localRepositoryPath, githubUsername, githubAccessToken, serviceName, replicaCount, dockerhubUsername);
@@ -318,7 +312,7 @@ public class GithubService {
     @Transactional
     public String actionCompleted(String userName, String repositoryName) {
         Member member = memberRepository.findByGithubName(userName).orElseThrow(() -> new RuntimeException("해당하는 유저가 없습니다."));
-        Project project = projectRepository.findByMemberIdAndName(member.getId(), repositoryName);
+        Project project = projectRepository.findByMemberIdAndName(member.getId(), member.getGithubName()).orElseThrow(() -> new RuntimeException("아직 CI과정이 완료되지 않았습니다."));
         project.updateCI();
         return "Action에서 정상적으로 요청되었습니다.";
     }

@@ -31,8 +31,7 @@ public class DockerComposeService {
 
     private Member getMemberbyJwtToken(String jwtToken) {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
-        return member;
+        return memberRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("해당하는 이메일이 없습니다."));
     }
 
     public String getGithubAccessToken(String jwtToken) {
