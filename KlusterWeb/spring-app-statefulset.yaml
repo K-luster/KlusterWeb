@@ -35,6 +35,3 @@ spec:
           resources: {}
       restartPolicy: Always
   updateStrategy: {}
-status:
-  availableReplicas: 0
-  replicas: 0
