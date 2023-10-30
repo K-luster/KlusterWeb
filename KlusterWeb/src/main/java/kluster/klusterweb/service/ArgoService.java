@@ -1,5 +1,8 @@
 package kluster.klusterweb.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kluster.klusterweb.config.jwt.JwtTokenProvider;
 import kluster.klusterweb.domain.Member;
 import kluster.klusterweb.dto.ArgoApi.*;
@@ -10,6 +13,8 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.tomcat.util.json.JSONParser;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -109,4 +114,39 @@ public class ArgoService {
         return responseEntity;
     }
 
+    public ArrayList<String> getDeploymentService(String repositoryName) throws JsonProcessingException {
+        String url = String.format("https://kluster.iptime.org:7001/api/v1/applications/%s", repositoryName);
+        RestTemplate restTemplate = this.makeRestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie", "argocd.token=" + cookieValue);
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                requestEntity,
+                String.class
+        );
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(responseEntity.getBody());
+        ArrayList<String> results = new ArrayList<>();
+        JsonNode resources = jsonNode.get("status").get("resources");
+        String[] validKinds = {"Deployment", "StatefulSet", "Pod", "DaemonSet"};
+
+        for (JsonNode resource : resources) {
+            String kind = resource.get("kind").asText();
+            if (isKindValid(kind, validKinds)) {
+                String resourceName = resource.get("name").asText();
+                results.add(resourceName);
+            }
+        }
+        return results;
+    }
+    private boolean isKindValid(String kind, String[] validKinds) {
+        for (String validKind : validKinds) {
+            if (kind.equals(validKind)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

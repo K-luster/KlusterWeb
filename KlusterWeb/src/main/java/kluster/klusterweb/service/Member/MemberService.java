@@ -10,6 +10,7 @@ import kluster.klusterweb.dto.Member.LoginDto;
 import kluster.klusterweb.dto.Member.MemberDto;
 import kluster.klusterweb.dto.Member.SchoolDto;
 import kluster.klusterweb.repository.MemberRepository;
+import kluster.klusterweb.service.EncryptService;
 import kluster.klusterweb.service.GithubService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,12 +29,12 @@ public class MemberService {
     @Value("${univcert.api.key}")
     String univCertApiKey;
 
-    private static String SCHOOL_NAME = "건국대학교";
-
+    private static final String SCHOOL_NAME = "건국대학교";
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final GithubService githubService;
+    private final EncryptService encryptService;
 
     public ResponseDto<?> login(String email, String password) {
         Optional<Member> member = memberRepository.findByEmail(email);
@@ -60,9 +61,9 @@ public class MemberService {
                 .email(email)
                 .password(passwordEncoder.encode(password))
                 .githubName(githubName.toLowerCase())
-                .githubAccessToken(githubAccessToken)
-                .dockerHubUsername(dockerhubUsername)
-                .dockerHubPassword(dockerhubPassword)
+                .githubAccessToken(encryptService.encrypt(githubAccessToken))
+                .dockerHubUsername(encryptService.encrypt(dockerhubUsername))
+                .dockerHubPassword(encryptService.encrypt(dockerhubPassword))
                 .build();
 
         memberRepository.save(member);

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,19 +25,19 @@ public class CIService {
     private final ProjectRepository projectRepository;
 
     public void saveProject(Member member, String repositoryName) {
-        Project project = Project.builder()
-                .name(repositoryName)
-                .isCI(Boolean.FALSE)
-                .isCD(Boolean.FALSE)
-                .member(member).build();
-        projectRepository.save(project);
+        Optional<Project> project = projectRepository.findByMemberIdAndName(member.getId(), repositoryName);
+        if (project.isEmpty()) {
+            Project saveProject = Project.builder()
+                    .name(repositoryName)
+                    .isCI(Boolean.FALSE)
+                    .isCD(Boolean.FALSE)
+                    .member(member).build();
+            projectRepository.save(saveProject);
+        }
     }
 
     public Boolean isCICompleted(Member member, String repositoryName) {
-        Project project = projectRepository.findByMemberIdAndName(member.getId(), repositoryName);
-        if (project == null) {
-            throw new RuntimeException("해당하는 프로젝트 찾을 수 없습니다.");
-        }
+        Project project = projectRepository.findByMemberIdAndName(member.getId(), repositoryName).orElseThrow(() -> new RuntimeException("해당하는 프로젝트가 존재하지 않습니다."));
         if (project.getIsCI().equals(Boolean.TRUE)) {
             return Boolean.TRUE;
         } else {
