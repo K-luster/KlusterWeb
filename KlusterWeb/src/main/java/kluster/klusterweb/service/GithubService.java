@@ -39,13 +39,14 @@ public class GithubService {
     private final ProjectRepository projectRepository;
     private final CIService CIService;
     private final CDService CDService;
+    private final EncryptService encryptService;
 
     public String getGithubAccessToken(String jwtToken) {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
         Optional<Member> member = memberRepository.findByEmail(email);
         if (member.isPresent()) {
             Member findMember = member.get();
-            return findMember.getGithubAccessToken();
+            return encryptService.decrypt(findMember.getGithubAccessToken());
         }
         throw new RuntimeException("존재하지 않는 이메일입니다.");
     }
@@ -72,7 +73,7 @@ public class GithubService {
     public String extractUserIdFromResponse(String response) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            Map<String, Object> info = objectMapper.readValue(response, new TypeReference<Map<String, Object>>() {
+            Map<String, Object> info = objectMapper.readValue(response, new TypeReference<>() {
             });
             return info.get("login").toString();
         } catch (IOException e) {
@@ -236,31 +237,6 @@ public class GithubService {
         String repositoryUrl = "https://github.com/" + githubUsername + "/" + repositoryName + ".git";
         String localPath = "/app/" + repositoryName;
         System.out.println(repositoryUrl);
-//        try{
-//            ProcessBuilder processBuilder = new ProcessBuilder();
-//            processBuilder.command("git", "clone", repositoryUrl, localPath);
-//            Process process = processBuilder.start();
-//
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-//            String line;
-//            while (true) {
-//                line = reader.readLine();
-//                if (line == null) {
-//                    break;
-//                }
-//                System.out.println(line);
-//            }
-
-//            int exitCode = process.waitFor();
-//            if (exitCode == 0){
-//                System.out.println("Repository Cloned Successfully.");
-//            }
-//            else{
-//                System.out.println("Error occured");
-//            }
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
         try {
             Git.cloneRepository()
                     .setURI(repositoryUrl)
@@ -268,18 +244,17 @@ public class GithubService {
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
                     .call();
             System.out.println("Repository clone success");
-        }
-        catch (GitAPIException e){
+        } catch (GitAPIException e) {
             System.out.println("Exception occured" + e);
         }
     }
 
     public void createDevelopBranch(String localRepositoryPath, String branchName) {
-                File repositoryDirectory = new File(localRepositoryPath);
-                String startPoint = "main"; // 새 브랜치의 시작 지점
-                try {
-                    Git git = Git.open(repositoryDirectory);
-                    Ref branchRef = git.branchCreate()
+        File repositoryDirectory = new File(localRepositoryPath);
+        String startPoint = "main"; // 새 브랜치의 시작 지점
+        try {
+            Git git = Git.open(repositoryDirectory);
+            Ref branchRef = git.branchCreate()
                     .setName(branchName)
                     .setStartPoint(startPoint)
                     .call();
@@ -304,13 +279,12 @@ public class GithubService {
         if (CIService.isCICompleted(member, serviceName)) {
             return CDService.commitAndPushDeployContents(localRepositoryPath, githubUsername, githubAccessToken, serviceName, replicaCount, dockerhubUsername);
         } else {
-            // throw new RuntimeException("아직 CI 과정이 완료되지 않았습니다.");
             return Boolean.FALSE;
         }
     }
 
     @Transactional
-    public String actionCompleted(String userName, String repositoryName) {
+    public String actionCompleted(String userName) {
         Member member = memberRepository.findByGithubName(userName).orElseThrow(() -> new RuntimeException("해당하는 유저가 없습니다."));
         Project project = projectRepository.findByMemberIdAndName(member.getId(), member.getGithubName()).orElseThrow(() -> new RuntimeException("아직 CI과정이 완료되지 않았습니다."));
         project.updateCI();

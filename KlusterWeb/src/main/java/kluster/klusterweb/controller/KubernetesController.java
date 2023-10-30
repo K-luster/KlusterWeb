@@ -21,12 +21,12 @@ public class KubernetesController {
     private final KubernetesService kubernetesService;
     private static String apiName;
     @GetMapping("/pod_list")
-    public List getPods(HttpServletRequest request){
+    public List<?> getPods(HttpServletRequest request){
         return kubernetesService.getPodResource(request.getHeader("Authorization"),RESOURCE_TYPE_POD, "pod_list");
     }
 
     @GetMapping("/pod_detail")
-    public List getPodsDetail(HttpServletRequest request){
+    public List<?> getPodsDetail(HttpServletRequest request){
         return kubernetesService.getPodResource(request.getHeader("Authorization"),RESOURCE_TYPE_POD, "pod_detail");
     }
 }

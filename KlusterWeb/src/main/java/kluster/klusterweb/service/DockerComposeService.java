@@ -28,6 +28,7 @@ public class DockerComposeService {
     private final CIService ciService;
     private final GithubService githubService;
     private final ProjectRepository projectRepository;
+    private final EncryptService encryptService;
 
     private Member getMemberbyJwtToken(String jwtToken) {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
@@ -69,7 +70,7 @@ public class DockerComposeService {
         String githubUsername = member.getGithubName();
         String githubAccessToken = getGithubAccessToken(jwtToken);
         String dockerhubUsername = member.getDockerHubUsername();
-        String dockerhubPassword = member.getDockerHubPassword();
+        String dockerhubPassword = encryptService.decrypt(member.getDockerHubPassword());
         githubService.cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
         composeBuilder(githubUsername, repositoryName);
         createDevelopBranch(localRepositoryPath, branchName);
