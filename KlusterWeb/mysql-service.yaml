@@ -10,13 +10,11 @@ metadata:
   name: mysql
   namespace: server
 spec:
-  clusterIP: None
   ports:
     - name: "3306"
       port: 3306
       targetPort: 3306
   selector:
     io.kompose.service: mysql
-  type: ClusterIP
-status:
-  loadBalancer: {}
+  type: LoadBalancer
+  loadBalancerIP: 192.168.0.252
