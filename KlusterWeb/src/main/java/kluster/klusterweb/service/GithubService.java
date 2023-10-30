@@ -223,7 +223,7 @@ public class GithubService {
         String githubUsername = member.getGithubName();
         String githubAccessToken = getGithubAccessToken(jwtToken);
         String dockerhubUsername = member.getDockerHubUsername();
-        String dockerhubPassword = member.getDockerHubPassword();
+        String dockerhubPassword = encryptService.decrypt(member.getDockerHubPassword());
 
         cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
         createDevelopBranch(localRepositoryPath, branchName);

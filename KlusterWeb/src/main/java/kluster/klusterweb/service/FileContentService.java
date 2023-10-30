@@ -7,6 +7,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -17,8 +18,8 @@ import java.io.IOException;
 @NoArgsConstructor
 public class FileContentService {
 
-    // private static final String SERVER_URL = "http://54.180.150.131/github/action-completed"; // EC2 주소
-    private static final String SERVER_URL = "http://kluster.iptime.org:7002/github/action-completed"; // ArgoCD 주소
+    @Value("${argocd.server.url}")
+    private String SERVER_URL;
 
     public String getActionContent(String githubUsername, String branchName, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
         String actionContent = String.format("\n" +
