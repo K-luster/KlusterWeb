@@ -26,6 +26,8 @@ public class Project extends BaseTimeEntity {
     @Column(name = "is_cd")
     private Boolean isCD;
 
+    private int projectVersion;
+
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
@@ -35,11 +37,16 @@ public class Project extends BaseTimeEntity {
         this.isCI = Boolean.TRUE;
     }
 
+    public int updateProjectVersion() {
+        return this.projectVersion = this.projectVersion + 1;
+    }
+
     @Builder
     public Project(String name, Boolean isCI, Boolean isCD, Member member) {
         this.name = name;
         this.isCI = isCI;
         this.isCD = isCD;
+        this.projectVersion = 0;
         this.member = member;
     }
 }

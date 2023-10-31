@@ -74,6 +74,8 @@ public class CIService {
             git.checkout()
                     .setName(branchName) // 푸시할 브랜치 이름을 지정
                     .call();
+            // namespace-username.yaml 파일 gitignore에 넣기
+            setGitIgnore(localRepositoryPath, githubUsername);
             git.add().addFilepattern(".").call();
             git.commit().setMessage(commitMessage).call();
             CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(githubUsername, githubAccessToken);
@@ -82,5 +84,12 @@ public class CIService {
         } catch (IOException | GitAPIException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setGitIgnore(String localRepositoryPath, String userNamespace) throws IOException {
+        File gitignoreFile = new File(localRepositoryPath + "/.gitignore");
+        FileWriter gitignoreWriter = new FileWriter(gitignoreFile, true);
+        gitignoreWriter.write(userNamespace + ".yaml\n");
+        gitignoreWriter.close();
     }
 }

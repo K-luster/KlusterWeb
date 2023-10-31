@@ -33,7 +33,7 @@ public class GithubController {
 
     @ApiOperation("레포지토리 생성합니다")
     @PostMapping("/create-repository")
-    public ResponseDto<?> createRepository(HttpServletRequest request, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) throws GitAPIException, IOException {
+    public ResponseDto<Object> createRepository(HttpServletRequest request, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) throws GitAPIException, IOException {
         return ResponseUtil.SUCCESS("Github 레포지토리가 생성되었습니다.",
                 githubService.createGitHubRepository(request.getHeader("Authorization"), repositoryName.getRepositoryName(), repositoryName.getLocalPath()));
     }
@@ -52,20 +52,20 @@ public class GithubController {
 
     @ApiOperation("자동으로 CI 과정을 진행합니다.")
     @PostMapping("/auto-ci")
-    public ResponseDto<?> autoCI(HttpServletRequest request, @RequestBody CommitPushDto commitPushDto) throws Exception {
+    public ResponseDto<Object> autoCI(HttpServletRequest request, @RequestBody CommitPushDto commitPushDto) throws Exception {
         return ResponseUtil.SUCCESS("자동 CI를 진행합니다",
                 githubService.autoCI(request.getHeader("Authorization"), commitPushDto.getRepositoryName(), commitPushDto.getLocalRepositoryPath(), commitPushDto.getBranchName()));
     }
 
     // github action에서 보내는 POST API
     @PostMapping("/action-completed")
-    public ResponseDto<?> receiveNotification(@RequestBody ActionCompletedDto actionCompletedDto) {
+    public ResponseDto<Object> receiveNotification(@RequestBody ActionCompletedDto actionCompletedDto) {
         return ResponseUtil.SUCCESS("Action 완료", githubService.actionCompleted(actionCompletedDto.getGithubUsername()));
     }
 
     @ApiOperation("자동으로 CD 과정을 진행합니다.")
     @PostMapping("/auto-cd")
-    public ResponseDto<?> autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) {
+    public ResponseDto<Object> autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) {
         Boolean fileAdd = githubService.autoCD(
                 request.getHeader("Authorization"),
                 deployRequestDto.getLocalRepositoryPath(),
