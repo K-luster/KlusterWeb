@@ -23,13 +23,13 @@ public class ArgoController {
     private final ArgoService argoService;
 
     @GetMapping("/get-all-applications")
-    public ResponseDto<Object> getAllApplications(HttpServletRequest request) {
-        return ResponseUtil.SUCCESS("모든 애플리케이션을 가져왔습니다", argoService.getAllApplications(request.getHeader("Authorization")));
+    public ResponseDto<Object> getAllApplications(@RequestHeader(value = "Authorization") String tokenInfo) {
+        return ResponseUtil.SUCCESS("모든 애플리케이션을 가져왔습니다", argoService.getAllApplications(tokenInfo));
     }
 
     @PostMapping("/make-application")
-    public ResponseDto<Object> makeApplication(HttpServletRequest request, @RequestBody ArgoApiRequestDto argoApiRequestDto) {
-        return ResponseUtil.SUCCESS("애플리케이션을 생성했습니다.", argoService.makeApplications(request.getHeader("Authorization"), argoApiRequestDto));
+    public ResponseDto<Object> makeApplication(@RequestHeader(value = "Authorization") String tokenInfo, @RequestBody ArgoApiRequestDto argoApiRequestDto) {
+        return ResponseUtil.SUCCESS("애플리케이션을 생성했습니다.", argoService.makeApplications(tokenInfo, argoApiRequestDto));
     }
 
     @PostMapping("/get-pod-info")

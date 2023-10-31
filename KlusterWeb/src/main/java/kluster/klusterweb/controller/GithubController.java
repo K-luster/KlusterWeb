@@ -33,28 +33,28 @@ public class GithubController {
 
     @ApiOperation("레포지토리 생성합니다")
     @PostMapping("/create-repository")
-    public ResponseDto<Object> createRepository(HttpServletRequest request, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) throws GitAPIException, IOException {
+    public ResponseDto<Object> createRepository(@RequestHeader(value = "Authorization") String tokenInfo, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) throws GitAPIException, IOException {
         return ResponseUtil.SUCCESS("Github 레포지토리가 생성되었습니다.",
-                githubService.createGitHubRepository(request.getHeader("Authorization"), repositoryName.getRepositoryName(), repositoryName.getLocalPath()));
+                githubService.createGitHubRepository(tokenInfo, repositoryName.getRepositoryName(), repositoryName.getLocalPath()));
     }
 
     @ApiOperation("모든 레포지토리를 가져옵니다.")
     @PostMapping("/get-all-repository")
-    public List<GitHubRepository> getAllRepository(HttpServletRequest request) throws IOException {
-        return githubService.getAllRepository(request.getHeader("Authorization"));
+    public List<GitHubRepository> getAllRepository(@RequestHeader(value = "Authorization") String tokenInfo) throws IOException {
+        return githubService.getAllRepository(tokenInfo);
     }
 
     @ApiOperation("레포지토리를 삭제합니다.")
     @PostMapping("/delete-repository")
-    public void deleteRepository(HttpServletRequest request, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) {
-        githubService.deleteRepository(request.getHeader("Authorization"), repositoryName.getRepositoryName());
+    public void deleteRepository(@RequestHeader(value = "Authorization") String tokenInfo, @RequestBody RepositoryDto.RepositoryRequestDto repositoryName) {
+        githubService.deleteRepository(tokenInfo, repositoryName.getRepositoryName());
     }
 
     @ApiOperation("자동으로 CI 과정을 진행합니다.")
     @PostMapping("/auto-ci")
-    public ResponseDto<Object> autoCI(HttpServletRequest request, @RequestBody CommitPushDto commitPushDto) throws Exception {
+    public ResponseDto<Object> autoCI(@RequestHeader(value = "Authorization") String tokenInfo, @RequestBody CommitPushDto commitPushDto) throws Exception {
         return ResponseUtil.SUCCESS("자동 CI를 진행합니다",
-                githubService.autoCI(request.getHeader("Authorization"), commitPushDto.getRepositoryName(), commitPushDto.getLocalRepositoryPath(), commitPushDto.getBranchName()));
+                githubService.autoCI(tokenInfo, commitPushDto.getRepositoryName(), commitPushDto.getLocalRepositoryPath(), commitPushDto.getBranchName()));
     }
 
     // github action에서 보내는 POST API
@@ -65,14 +65,14 @@ public class GithubController {
 
     @ApiOperation("자동으로 CD 과정을 진행합니다.")
     @PostMapping("/auto-cd")
-    public ResponseDto<Object> autoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto) {
+    public ResponseDto<Object> autoCD(@RequestHeader(value = "Authorization") String tokenInfo, @RequestBody DeployRequestDto deployRequestDto) {
         Boolean fileAdd = githubService.autoCD(
-                request.getHeader("Authorization"),
+                tokenInfo,
                 deployRequestDto.getLocalRepositoryPath(),
                 deployRequestDto.getServiceName(),
                 deployRequestDto.getReplicaCount());
         if (fileAdd) {
-            return ResponseUtil.SUCCESS("배포된 애플리케이션이 생성되었습니다.", argoService.makeApplications(request.getHeader("Authorization"), deployRequestDto.getArgoApiRequestDto()));
+            return ResponseUtil.SUCCESS("배포된 애플리케이션이 생성되었습니다.", argoService.makeApplications(tokenInfo, deployRequestDto.getArgoApiRequestDto()));
         } else {
             return ResponseUtil.FAILURE("아직 CI과정이 완료되지 않았습니다.", null);
         }

@@ -24,9 +24,9 @@ public class DockerComposeController {
 
     @ApiOperation("Docker-compose가 있는 경우의 CI 과정을 진행합니다.")
     @PostMapping("/auto-ci")
-    public ResponseDto<Object> dockerComposeAutoCI(HttpServletRequest request, @RequestBody CommitPushDto commitPushDto) throws GitAPIException {
+    public ResponseDto<Object> dockerComposeAutoCI(@RequestHeader(value = "Authorization") String tokenInfo, @RequestBody CommitPushDto commitPushDto) throws GitAPIException {
         return ResponseUtil.SUCCESS("Docker-compose 자동 CI가 진행됩니다.", dockerComposeService.dockerComposeCI(
-                request.getHeader("Authorization"),
+                tokenInfo,
                 commitPushDto.getRepositoryName(),
                 commitPushDto.getLocalRepositoryPath(),
                 commitPushDto.getBranchName()));
@@ -34,7 +34,7 @@ public class DockerComposeController {
 
     @ApiOperation("Docker-compose가 있는 경우의 CD 과정 API")
     @PostMapping("/auto-cd")
-    public ResponseDto<Object> dockerComposeAutoCD(HttpServletRequest request, @RequestBody DeployRequestDto deployRequestDto){
-        return ResponseUtil.SUCCESS("배포된 애플리케이션이 생성되었습니다.", argoService.makeApplications(request.getHeader("Authorization"), deployRequestDto.getArgoApiRequestDto()));
+    public ResponseDto<Object> dockerComposeAutoCD(@RequestHeader(value = "Authorization") String tokenInfo, @RequestBody DeployRequestDto deployRequestDto){
+        return ResponseUtil.SUCCESS("배포된 애플리케이션이 생성되었습니다.", argoService.makeApplications(tokenInfo, deployRequestDto.getArgoApiRequestDto()));
     }
 }
