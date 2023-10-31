@@ -28,6 +28,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpMethod;
@@ -84,15 +85,14 @@ public class ArgoService {
         HttpEntity<String> requestEntity = new HttpEntity<>(null, headers);
         ResponseEntity<ArgoNameSpaceApplicationResponseDto> response = restTemplate.exchange(apiUrl
                 , HttpMethod.GET, requestEntity, ArgoNameSpaceApplicationResponseDto.class);
-        List<Items> items = response.getBody().getItems();
-        List<ArgoApplicationResponseDto> argoApplicationResponseDtos = items.stream()
+        List<Items> items = Objects.requireNonNull(response.getBody()).getItems();
+        return items.stream()
                 .filter(item -> item.getSpec().getDestination().getNamespace().equals(namespace))
                 .map(item -> ArgoApplicationResponseDto.builder()
                         .name(item.getMetadata().getName())
                         .repoURL(item.getSpec().getSource().getRepoUrl())
                         .build())
                 .collect(Collectors.toList());
-        return argoApplicationResponseDtos;
     }
 
     public ResponseEntity<ArgoApiResponseDto> makeApplications(String jwtToken, ArgoApiRequestDto requestDto) {
@@ -105,13 +105,12 @@ public class ArgoService {
         requestDto.getSpecDto().getDestinationDto().setNamespace(member.getGithubName().toLowerCase());
         requestDto.getSpecDto().getSyncPolicyDto().setSyncOptions(new ArrayList<>());
         HttpEntity<ArgoApiRequestDto> requestEntity = new HttpEntity<>(requestDto, headers);
-        ResponseEntity<ArgoApiResponseDto> responseEntity = restTemplate.exchange(
+        return restTemplate.exchange(
                 apiUrl,
                 HttpMethod.POST,
                 requestEntity,
                 ArgoApiResponseDto.class
         );
-        return responseEntity;
     }
 
     public ArrayList<String> getDeploymentService(String repositoryName) throws JsonProcessingException {

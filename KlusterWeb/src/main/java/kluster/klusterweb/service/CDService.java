@@ -27,7 +27,7 @@ public class CDService {
         String filePath = directoryPath + "/deployment.yml"; // 파일 경로 지정
         File directory = new File(directoryPath);
         if (fileContentService.makeDir(directory)) return;
-        fileContentService.makeFile("develop",localRepositoryPath, githubAccessToken, githubUsername, deploymentYmlContent, new File(filePath), "feat: deploymentYmlContent 추가");
+        fileContentService.makeFile("develop", localRepositoryPath, githubAccessToken, githubUsername, deploymentYmlContent, new File(filePath), "feat: deploymentYmlContent 추가");
     }
 
     private void commitAndPushServiceYml(String localRepositoryPath, String githubUsername, String githubAccessToken, String serviceName) {

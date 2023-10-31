@@ -23,17 +23,17 @@ public class ArgoController {
     private final ArgoService argoService;
 
     @GetMapping("/get-all-applications")
-    public ResponseDto<?> getAllApplications(HttpServletRequest request) {
-        return ResponseUtil.SUCCESS("모든 애플리케이션을 가져왔습니다", argoService.getAllApplications(request.getHeader("Authorization")));
+    public ResponseDto<Object> getAllApplications(@RequestHeader(value = "Authorization") String tokenInfo) {
+        return ResponseUtil.SUCCESS("모든 애플리케이션을 가져왔습니다", argoService.getAllApplications(tokenInfo));
     }
 
     @PostMapping("/make-application")
-    public ResponseDto<?> makeApplication(HttpServletRequest request, @RequestBody ArgoApiRequestDto argoApiRequestDto) {
-        return ResponseUtil.SUCCESS("애플리케이션을 생성했습니다.", argoService.makeApplications(request.getHeader("Authorization"), argoApiRequestDto));
+    public ResponseDto<Object> makeApplication(@RequestHeader(value = "Authorization") String tokenInfo, @RequestBody ArgoApiRequestDto argoApiRequestDto) {
+        return ResponseUtil.SUCCESS("애플리케이션을 생성했습니다.", argoService.makeApplications(tokenInfo, argoApiRequestDto));
     }
 
     @PostMapping("/get-pod-info")
-    public ResponseDto<?> getPodInfo(@RequestBody RepositoryName repositoryName) throws JsonProcessingException {
+    public ResponseDto<Object> getPodInfo(@RequestBody RepositoryName repositoryName) throws JsonProcessingException {
         System.out.println("repositoryName = " + repositoryName);
         return ResponseUtil.SUCCESS("[Deployment, StatefulSet, Pod, DaemonSet]에 해당하는 pod들입니다.", argoService.getDeploymentService(repositoryName.getRepositoryName()));
     }
