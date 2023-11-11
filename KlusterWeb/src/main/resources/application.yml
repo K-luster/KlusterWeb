@@ -2,7 +2,7 @@ spring:
   profiles:
     include: secure
   datasource:
-    url: ENC(XbhnumseAaQ+WkLoTd3c8pCUUOE1qLRV01csowxFMEX6PqNOAd3adJE7wpj0b6LE6/5aqV4wSas=)
+    url: ENC(TqJQrcKpO4BNhlM5PdCRSNj7XSPCiOpInGYGjEKN6gUjQD76wr6VcWG90Qqzn3Tb)
     username: ENC(zcsM8ZDJlPgE6ARZXcc30Q==)
     password: ENC(981rpExspqHwAo0RdQdfElFcAhb7heOJ)
 #  datasource: # docker-compose를 사용하기 위한 설정 파일
@@ -11,7 +11,7 @@ spring:
 #    password: 123456
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
       dialect: org.hibernate.dialect.MySQL8Dialect
     properties:
       hibernate:
@@ -22,6 +22,18 @@ spring:
     pathmatch:
       matching-strategy:
         ant_path_matcher
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: taeheon7757@gmail.com
+    password: cuql rhai iksw slit
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+            required: true
+          auth: true
 jwt:
   secret: ENC(1mPRNzjXY+Uha2424+Zwk14A8rln8cRI7y+7/mbD+fDPQ7BuoOeaXYs12NxOJ66d38UQSCDTBszml6lBtf8eEQ==)
 jenkins:
@@ -29,9 +41,6 @@ jenkins:
   secret-key: jenkins-secret-key
 github:
   access-token: ENC(JTR6X87H+WFajH+mLgRK9bfcZogx34+fyrViAXvdazIXplkWJhOUPVzcim7i1PnQMSrai1LDV3w=)
-univcert:
-  api:
-    key: ENC(mEC2ThOsBweDr/jxdhV+r9IZ4HB005ZTWRUfIw8U4Sfqas2tBbJ34nna2jLJhoy6)
 config:
   kubernetes:
     url: https://kluster.iptime.org:6443
@@ -41,6 +50,7 @@ config:
 argocd:
   url: https://kluster.iptime.org:7001/api/v1
   cookie: ENC(86tj2v1Mg2cQ/WeSCttOvIAV01yqft6Tne1n0IxenkubyMi0GvYn7Tl0T3Bg4usSjiGjFqJEWRysGThGXWvepm3ENzfwJIZcjb0/uaX2ZjpUeFeBJ9F/awWeq5ron2BxNIl8+cCLU8OWj0snzFczP5+XfqHLqRFCYZ+jFnX//eLyi2XHFY8Gz7X4Hti+rRbg3u5a4bNDjizvHk+5xGOWHnMN3Pt3CFhM5J9/b0q7I64GBY/gI/LdBMGvyj0fWgVwvfeVG41+HWOz5A43HOFYGhlke5KmW896gFoXIcYCid+6Vela43zyFfKPb0zHxWMkdRyL+vnc1HQ=)
+
 #server:
 #  ssl:
 #    enabled: true

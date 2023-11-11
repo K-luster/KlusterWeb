@@ -33,8 +33,8 @@ dependencies {
 	//github api
 	implementation 'org.kohsuke:github-api:1.315'
 
-	// Univcert
-	implementation 'com.github.in-seo:univcert:master-SNAPSHOT'
+	// Mail
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	// 타임리프
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
