@@ -8,22 +8,16 @@ import kluster.klusterweb.domain.SchoolEmail;
 import kluster.klusterweb.dto.*;
 import kluster.klusterweb.dto.Member.LoginDto;
 import kluster.klusterweb.dto.Member.MemberDto;
-import kluster.klusterweb.dto.Member.SchoolDto;
 import kluster.klusterweb.repository.MemberRepository;
 import kluster.klusterweb.repository.SchoolEmailRepository;
 import kluster.klusterweb.service.EncryptService;
 import kluster.klusterweb.service.GithubService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.mail.javamail.JavaMailSender;
-
-import java.io.IOException;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
