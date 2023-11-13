@@ -90,19 +90,46 @@ public class DockerComposeService {
     private void composeBuilder(String githubUsername, String repositoryName) {
         try {
             String namespace = String.format("--namespace=%s", githubUsername);
-            String[] commandArgs = {"kompose", "-f", "docker-compose.yaml", namespace, "--controller", "statefulset", "convert"};
+            String filePath = "/app/" + repositoryName;
+            String[] commandArgs = {"kompose", "-f", "docker-compose.yml", namespace, "--controller", "statefulset", "convert"};
+
             ProcessBuilder processBuilder = new ProcessBuilder(commandArgs);
-            processBuilder.directory(new File("/app/" + repositoryName));
+            processBuilder.directory(new File(filePath));
             processBuilder.redirectErrorStream(true);
+
             System.out.println("processBuilder = " + processBuilder);
+
             Process process = processBuilder.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
             }
-            process.waitFor();
 
+            int exitCode = process.waitFor();
+
+            // If the exit code is not 0, retry with "docker-compose.yml"
+            if (exitCode != 0) {
+                System.out.println("Retrying with docker-compose.yaml");
+                commandArgs[2] = "docker-compose.yaml"; // Change to "docker-compose.yml"
+                processBuilder = new ProcessBuilder(commandArgs);
+                processBuilder.directory(new File(filePath));
+                processBuilder.redirectErrorStream(true);
+
+                System.out.println("processBuilder = " + processBuilder);
+
+                process = processBuilder.start();
+                reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+
+                exitCode = process.waitFor();
+
+                if (exitCode != 0) {
+                    System.out.println("Error occurred while running kompose.");
+                }
+            }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
