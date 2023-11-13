@@ -156,6 +156,35 @@ public class FileContentService {
         return dockerComposeCIContent;
     }
 
+    public String getDockerBuildAndComposeCIContent(String dockerhubUsername, String dockerhubPassword, String repositoryName, String githubUsername) {
+        String dockerComposeCIContent = String.format("name: Kompose Convert on Main Branch\n" +
+                        "\n" +
+                        "on:\n" +
+                        "  push:\n" +
+                        "    branches:\n" +
+                        "      - develop\n" +
+                        "\n" +
+                        "jobs:\n" +
+                        "  kompose-convert:\n" +
+                        "    runs-on: ubuntu-latest\n" +
+                        "\n" +
+                        "    steps:\n" +
+                        "    - name: Checkout Repository\n" +
+                        "      uses: actions/checkout@v2\n" +
+                        "\n" +
+                        "    - name: Docker build & push to docker repo\n" +
+                        "      run: |\n" +
+                        "          docker login -u %s -p %s\n" +
+                        "          docker build -t %s/%s -f Dockerfile .\n" +
+                        "          docker push %s/%s\n" +
+                        "    # Add additional steps here to deploy the generated Kubernetes resources.\n" +
+                        "    - name: CI Completed\n" +
+                        "      run:  |\n" +
+                        "        curl -H \"Content-Type: application/json\" -d '{ \"repositoryName\": \"%s\", \"githubUsername\": \"%s\"}' -X POST %s\n",
+                dockerhubUsername, dockerhubPassword, dockerhubUsername, repositoryName, dockerhubUsername, repositoryName, repositoryName, githubUsername, SERVER_URL);
+        return dockerComposeCIContent;
+    }
+
     public boolean makeDir(File directory) {
         if (!directory.exists()) {
             if (directory.mkdirs()) {
