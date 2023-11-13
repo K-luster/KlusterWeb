@@ -217,7 +217,7 @@ public class GithubService {
         return member;
     }
 
-    public String autoCI(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) throws Exception {
+    public String autoCI(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) {
         Member member = getMemberbyJwtToken(jwtToken);
 
         String githubUsername = member.getGithubName();
@@ -233,7 +233,7 @@ public class GithubService {
         return "CI 성공";
     }
 
-    public void cloneGitRepository(String repositoryName, String githubUsername, String githubAccessToken) throws GitAPIException {
+    public void cloneGitRepository(String repositoryName, String githubUsername, String githubAccessToken) {
         String repositoryUrl = "https://github.com/" + githubUsername + "/" + repositoryName + ".git";
         String localPath = "/app/" + repositoryName;
         System.out.println(repositoryUrl);
@@ -289,5 +289,10 @@ public class GithubService {
         Project project = projectRepository.findByMemberIdAndName(member.getId(), member.getGithubName()).orElseThrow(() -> new RuntimeException("아직 CI과정이 완료되지 않았습니다."));
         project.updateCI();
         return "Action에서 정상적으로 요청되었습니다.";
+    }
+
+    public void addLabel(String repositoryName, String githubName) {
+        String localPath = "/app/" + repositoryName;
+
     }
 }

@@ -30,17 +30,12 @@ public class LoginController {
     }
 
     @PostMapping("/school-email")
-    public ResponseDto<?> schoolEmail(@RequestBody SchoolDto.codeCheck codeCheck) throws IOException {
+    public ResponseDto<?> schoolEmail(@RequestBody SchoolDto.codeCheck codeCheck) {
         return memberService.schoolEmail(codeCheck.getEmail());
     }
 
     @PostMapping("/school-email-check")
-    public ResponseDto<?> schoolEmailCheck(@RequestBody SchoolDto.codeCheck codeCheck) throws IOException {
+    public ResponseDto<?> schoolEmailCheck(@RequestBody SchoolDto.codeCheck codeCheck) {
         return memberService.schoolEmailCheck(codeCheck.getEmail(), codeCheck.getCode());
-    }
-
-    @PostMapping("/school-email-resend")
-    public ResponseDto<?> schoolEmailResend(@RequestBody SchoolDto.codeCheck codeCheck) throws IOException {
-        return memberService.schoolEmailReset(codeCheck.getEmail());
     }
 }

@@ -8,12 +8,18 @@ import lombok.RequiredArgsConstructor;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.Optional;
 
 @Service
@@ -65,13 +71,15 @@ public class DockerComposeService {
         }
     }
 
-    public String dockerComposeCI(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) throws GitAPIException {
+    public String dockerComposeCI(String jwtToken, String repositoryName, String localRepositoryPath, String branchName) {
         Member member = getMemberbyJwtToken(jwtToken);
         String githubUsername = member.getGithubName();
         String githubAccessToken = getGithubAccessToken(jwtToken);
         String dockerhubUsername = member.getDockerHubUsername();
         String dockerhubPassword = encryptService.decrypt(member.getDockerHubPassword());
         githubService.cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
+        // 여기서 docker-compose 에 label 달기
+        githubService.addLabel(repositoryName, member.getGithubName());
         composeBuilder(githubUsername, repositoryName);
         createDevelopBranch(localRepositoryPath, branchName);
         changeKompose(localRepositoryPath, branchName, githubAccessToken, githubUsername, dockerhubUsername, dockerhubPassword, repositoryName);
@@ -82,26 +90,58 @@ public class DockerComposeService {
     private void composeBuilder(String githubUsername, String repositoryName) {
         try {
             String namespace = String.format("--namespace=%s", githubUsername);
-            String[] commandArgs = {"kompose", "-f", "docker-compose.yaml", namespace, "--controller","statefulset","convert"};
+            String filePath = "/app/" + repositoryName;
+            String[] commandArgs = {"kompose", "-f", "docker-compose.yml", namespace, "--controller", "statefulset", "convert"};
+
             ProcessBuilder processBuilder = new ProcessBuilder(commandArgs);
-            processBuilder.directory(new File("/app/" + repositoryName));
+            processBuilder.directory(new File(filePath));
             processBuilder.redirectErrorStream(true);
+
             System.out.println("processBuilder = " + processBuilder);
+
             Process process = processBuilder.start();
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
             }
-            process.waitFor();
 
+            int exitCode = process.waitFor();
+
+            // If the exit code is not 0, retry with "docker-compose.yml"
+            if (exitCode != 0) {
+                System.out.println("Retrying with docker-compose.yaml");
+                commandArgs[2] = "docker-compose.yaml"; // Change to "docker-compose.yml"
+                processBuilder = new ProcessBuilder(commandArgs);
+                processBuilder.directory(new File(filePath));
+                processBuilder.redirectErrorStream(true);
+
+                System.out.println("processBuilder = " + processBuilder);
+
+                process = processBuilder.start();
+                reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                }
+
+                exitCode = process.waitFor();
+
+                if (exitCode != 0) {
+                    System.out.println("Error occurred while running kompose.");
+                }
+            }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     public void changeKompose(String localRepositoryPath, String branchName, String githubAccessToken, String githubUsername, String dockerhubUsername, String dockerhubPassword, String repositoryName) {
-        String actionContent = fileContentService.getDockerComposeCIContent(repositoryName, githubUsername);
+        String actionContent;
+        if (isDockerfileExists(localRepositoryPath)) { // Dockerfile 있는 경우
+            actionContent = fileContentService.getDockerBuildAndComposeCIContent(dockerhubUsername, dockerhubPassword, repositoryName, githubUsername);
+        } else {
+            actionContent = fileContentService.getDockerComposeCIContent(repositoryName, githubUsername);
+        }
         String directoryPath = localRepositoryPath + "/.github/workflows"; // 디렉터리 경로 지정
         String filePath = directoryPath + "/myworkflow.yaml"; // 파일 경로 지정
         File directory = new File(directoryPath);
@@ -110,5 +150,28 @@ public class DockerComposeService {
         fileContentService.makeFile(branchName, localRepositoryPath, githubAccessToken, githubUsername, actionContent, file, "Add githubActionFile");
     }
 
+    public boolean isDockerfileExists(String localRepositoryPath) {
+        String dockerfilePath = "Dockerfile"; // Dockerfile의 경로
+        try (Git git = Git.open(Path.of(localRepositoryPath).toFile())) {
+            Iterable<RevCommit> commits = git.log().all().call();
+            for (RevCommit commit : commits) {
+                try (RevWalk walk = new RevWalk(git.getRepository())) {
+                    RevTree tree = walk.parseTree(commit.getTree().getId());
+                    try (TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
+                        treeWalk.addTree(tree);
+                        treeWalk.setRecursive(true);
+                        treeWalk.setFilter(PathFilter.create(dockerfilePath));
+
+                        if (treeWalk.next()) {
+                            return true; // Dockerfile이 최소한 한 번 이상의 커밋에서 발견됨
+                        }
+                    }
+                }
+            }
+        } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
 }

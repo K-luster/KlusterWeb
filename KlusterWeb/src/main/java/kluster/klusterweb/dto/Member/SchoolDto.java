@@ -16,7 +16,7 @@ public class SchoolDto {
     @Data
     public static class codeCheck {
         private String email;
-        private int code;
+        private String code;
     }
 
 }
