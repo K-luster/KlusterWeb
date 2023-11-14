@@ -134,24 +134,24 @@ public class FileContentService {
 
     public String getDockerComposeCIContent(String repositoryName, String githubUsername) {
         String dockerComposeCIContent = String.format("name: Kompose Convert on Main Branch\n" +
-                "\n" +
-                "on:\n" +
-                "  push:\n" +
-                "    branches:\n" +
-                "      - develop\n" +
-                "\n" +
-                "jobs:\n" +
-                "  kompose-convert:\n" +
-                "    runs-on: ubuntu-latest\n" +
-                "\n" +
-                "    steps:\n" +
-                "    - name: Checkout Repository\n" +
-                "      uses: actions/checkout@v2\n" +
-                "\n" +
-                "    # Add additional steps here to deploy the generated Kubernetes resources.\n" +
-                "    - name: CI Completed\n" +
-                "      run:  |\n" +
-                "        curl -H \"Content-Type: application/json\" -d '{ \"repositoryName\": \"%s\", \"githubUsername\": \"%s\"}' -X POST %s\n",
+                        "\n" +
+                        "on:\n" +
+                        "  push:\n" +
+                        "    branches:\n" +
+                        "      - develop\n" +
+                        "\n" +
+                        "jobs:\n" +
+                        "  kompose-convert:\n" +
+                        "    runs-on: ubuntu-latest\n" +
+                        "\n" +
+                        "    steps:\n" +
+                        "    - name: Checkout Repository\n" +
+                        "      uses: actions/checkout@v2\n" +
+                        "\n" +
+                        "    # Add additional steps here to deploy the generated Kubernetes resources.\n" +
+                        "    - name: CI Completed\n" +
+                        "      run:  |\n" +
+                        "        curl -H \"Content-Type: application/json\" -d '{ \"repositoryName\": \"%s\", \"githubUsername\": \"%s\"}' -X POST %s\n",
                 repositoryName, githubUsername, SERVER_URL);
         return dockerComposeCIContent;
     }
@@ -174,14 +174,15 @@ public class FileContentService {
                         "\n" +
                         "    - name: Docker build & push to docker repo\n" +
                         "      run: |\n" +
-                        "          docker login -u %s -p %s\n" +
-                        "          docker build -t %s/%s -f Dockerfile .\n" +
-                        "          docker push %s/%s\n" +
+                        "          docker login docku.ddns.net -u kluster -p Klusterjoa18!\n" +
+                        "          docker build -t %s:latest -f Dockerfile .\n" +
+                        "          docker tag %s:latest docku.ddns.net/library/%s_%s:latest\n" +
+                        "          docker push docku.ddns.net/library/%s_%s:latest\n" +
                         "    # Add additional steps here to deploy the generated Kubernetes resources.\n" +
                         "    - name: CI Completed\n" +
                         "      run:  |\n" +
-                        "        curl -H \"Content-Type: application/json\" -d '{ \"repositoryName\": \"%s\", \"githubUsername\": \"%s\"}' -X POST %s\n",
-                dockerhubUsername, dockerhubPassword, dockerhubUsername, repositoryName, dockerhubUsername, repositoryName, repositoryName, githubUsername, SERVER_URL);
+                        "        curl -H \"Content-Type: application/json\" -d '{ \"repositoryName\": \"%s\", \"githubUsername\": \"%s\"}' -X POST https://kuploy.ddns.net/server/github/action-completed\n",
+                repositoryName, repositoryName, githubUsername, repositoryName, githubUsername, repositoryName, repositoryName, githubUsername, SERVER_URL);
         return dockerComposeCIContent;
     }
 

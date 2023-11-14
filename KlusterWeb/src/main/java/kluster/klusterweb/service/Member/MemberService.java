@@ -78,21 +78,26 @@ public class MemberService {
 
     public ResponseDto<?> schoolEmail(String email) {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        try {
-            simpleMailMessage.setTo(email);
-            simpleMailMessage.setSubject("학교 인증 코드 번호입니다.");
-            String verificationCode = generateVerificationCode();
-            simpleMailMessage.setText(String.format("code : %s", verificationCode));
-            if (schoolEmailRepository.findByEmail(email).isPresent()) {
-                schoolEmailRepository.delete(schoolEmailRepository.findByEmail(email).get());
+        if (email.contains("@konkuk.ac.kr")) {
+            try {
+                simpleMailMessage.setTo(email);
+                simpleMailMessage.setSubject("학교 인증 코드 번호입니다.");
+                String verificationCode = generateVerificationCode();
+                simpleMailMessage.setText(String.format("code : %s", verificationCode));
+                if (schoolEmailRepository.findByEmail(email).isPresent()) {
+                    schoolEmailRepository.delete(schoolEmailRepository.findByEmail(email).get());
+                }
+                SchoolEmail schoolEmail = SchoolEmail.builder().email(email).code(verificationCode).build();
+                schoolEmailRepository.save(schoolEmail);
+                javaMailSender.send(simpleMailMessage);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-            SchoolEmail schoolEmail = SchoolEmail.builder().email(email).code(verificationCode).build();
-            schoolEmailRepository.save(schoolEmail);
-            javaMailSender.send(simpleMailMessage);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseUtil.SUCCESS("학교 메일이 전송되었습니다.", email);
+        } else {
+            return ResponseUtil.FAILURE("건국대학교 학생만 사용가능합니다.", email);
         }
-        return ResponseUtil.SUCCESS("학교 메일이 전송되었습니다.", email);
+
     }
 
     public ResponseDto<?> schoolEmailCheck(String email, String code) {

@@ -114,7 +114,7 @@ public class ArgoService {
     }
 
     public ArrayList<String> getDeploymentService(String repositoryName) throws JsonProcessingException {
-        String url = String.format("https://kluster.iptime.org:7001/api/v1/applications/%s", repositoryName);
+        String url = String.format("https://kluster.iptime.org:9001/api/v1/applications/%s", repositoryName);
         RestTemplate restTemplate = this.makeRestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cookie", "argocd.token=" + cookieValue);
