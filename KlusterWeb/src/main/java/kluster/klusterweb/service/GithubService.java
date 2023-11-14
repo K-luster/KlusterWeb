@@ -189,7 +189,7 @@ public class GithubService {
         URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
-        connection.setRequestProperty("Authorization", "token " + member.getGithubAccessToken());
+        connection.setRequestProperty("Authorization", "token " + encryptService.decrypt(member.getGithubAccessToken()));
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder jsonResponse = new StringBuilder();
         String line;
@@ -222,7 +222,7 @@ public class GithubService {
 
         String githubUsername = member.getGithubName();
         String githubAccessToken = getGithubAccessToken(jwtToken);
-        String dockerhubUsername = member.getDockerHubUsername();
+        String dockerhubUsername = encryptService.decrypt(member.getDockerHubUsername());
         String dockerhubPassword = encryptService.decrypt(member.getDockerHubPassword());
 
         cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
@@ -273,7 +273,7 @@ public class GithubService {
         Member member = getMemberbyJwtToken(jwtToken);
         String githubUsername = member.getGithubName();
         String githubAccessToken = getGithubAccessToken(jwtToken);
-        String dockerhubUsername = member.getDockerHubUsername();
+        String dockerhubUsername = encryptService.decrypt(member.getDockerHubUsername());
         Project project = projectRepository.findByMemberIdAndName(member.getId(), member.getGithubName()).orElseThrow(() -> new RuntimeException("아직 CI과정이 완료되지 않았습니다."));
         System.out.println("project = " + project);
         if (CIService.isCICompleted(member, serviceName)) {

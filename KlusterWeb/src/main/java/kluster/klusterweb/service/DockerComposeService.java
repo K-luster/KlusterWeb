@@ -19,7 +19,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
 @Service
@@ -46,7 +49,7 @@ public class DockerComposeService {
         Optional<Member> member = memberRepository.findByEmail(email);
         if (member.isPresent()) {
             Member findMember = member.get();
-            return findMember.getGithubAccessToken();
+            return encryptService.decrypt(findMember.getGithubAccessToken());
         }
         throw new RuntimeException("존재하지 않는 이메일입니다.");
     }
@@ -75,16 +78,37 @@ public class DockerComposeService {
         Member member = getMemberbyJwtToken(jwtToken);
         String githubUsername = member.getGithubName();
         String githubAccessToken = getGithubAccessToken(jwtToken);
-        String dockerhubUsername = member.getDockerHubUsername();
+        String dockerhubUsername = encryptService.decrypt(member.getDockerHubUsername());
         String dockerhubPassword = encryptService.decrypt(member.getDockerHubPassword());
         githubService.cloneGitRepository(repositoryName, member.getGithubName(), githubAccessToken);
         // 여기서 docker-compose 에 label 달기
+        // modifyDockerCompose(localRepositoryPath);
         githubService.addLabel(repositoryName, member.getGithubName());
         composeBuilder(githubUsername, repositoryName);
         createDevelopBranch(localRepositoryPath, branchName);
         changeKompose(localRepositoryPath, branchName, githubAccessToken, githubUsername, dockerhubUsername, dockerhubPassword, repositoryName);
         ciService.saveProject(member, repositoryName);
         return "Action 완료";
+    }
+
+    private void modifyDockerCompose(String localRepositoryPath) {
+        Path dockerComposePath = Paths.get(localRepositoryPath, "docker-compose.yml");
+        if (dockerComposePath == null) {
+            dockerComposePath = Paths.get(localRepositoryPath, "docker-compose.yaml");
+        }
+        try {
+            String dockerComposeContent = new String(Files.readAllBytes(dockerComposePath));
+            String modifiedContent = modifyContent(dockerComposeContent);
+            Files.write(dockerComposePath, modifiedContent.getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String modifyContent(String originalContent) {
+        // Modify the content here as needed
+        // For example, add or replace some text
+        return originalContent.replace("oldValue", "newValue");
     }
 
     private void composeBuilder(String githubUsername, String repositoryName) {
@@ -108,7 +132,6 @@ public class DockerComposeService {
 
             int exitCode = process.waitFor();
 
-            // If the exit code is not 0, retry with "docker-compose.yml"
             if (exitCode != 0) {
                 System.out.println("Retrying with docker-compose.yaml");
                 commandArgs[2] = "docker-compose.yaml"; // Change to "docker-compose.yml"

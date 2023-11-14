@@ -15,6 +15,7 @@ public class Member extends BaseTimeEntity{
     private String email;
     private String password;
     private String githubName;
+    @Column(length = 2000)
     private String githubAccessToken;
     private String dockerHubUsername;
     private String dockerHubPassword;
