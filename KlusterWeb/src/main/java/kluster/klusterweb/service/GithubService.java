@@ -22,6 +22,13 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.introspector.Property;
+import org.yaml.snakeyaml.nodes.NodeTuple;
+import org.yaml.snakeyaml.nodes.ScalarNode;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.*;
 import java.net.*;
@@ -40,6 +47,7 @@ public class GithubService {
     private final CIService CIService;
     private final CDService CDService;
     private final EncryptService encryptService;
+    private static final String NEW_IMAGE_PREFIX = "docku.ddns.net/library/";
 
     public String getGithubAccessToken(String jwtToken) {
         String email = jwtTokenProvider.extractSubjectFromJwt(jwtToken);
@@ -248,6 +256,76 @@ public class GithubService {
             System.out.println("Exception occured" + e);
         }
     }
+
+//    public void cloneGitRepositoryAndEditDockerCompose(String repositoryName, String githubUsername, String githubAccessToken) {
+//        String repositoryUrl = "https://github.com/" + githubUsername + "/" + repositoryName + ".git";
+//        String localPath = "/app/" + repositoryName;
+//        System.out.println(repositoryUrl);
+//        try {
+//            Git git = Git.cloneRepository()
+//                    .setURI(repositoryUrl)
+//                    .setDirectory(new File(localPath))
+//                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider(githubAccessToken, ""))
+//                    .call();
+//            System.out.println("Repository clone success");
+//
+//            File composeFile = new File(localPath + "/docker-compose.yml");
+//            FileInputStream fis = new FileInputStream(composeFile);
+//
+//            // Parse YAML
+//            Yaml yaml = new Yaml();
+//            Map<String, Object> yamlMap = yaml.load(fis);
+//
+//            // Modify image in the services section
+//            if (yamlMap.containsKey("services")) {
+//                Map<String, Object> services = (Map<String, Object>) yamlMap.get("services");
+//                services.forEach((serviceName, serviceConfig) -> {
+//                    if (serviceConfig instanceof Map) {
+//                        Map<String, Object> serviceConfigMap = (Map<String, Object>) serviceConfig;
+//                        if (serviceConfigMap.containsKey("image")) {
+//                            String currentImage = (String) serviceConfigMap.get("image");
+//                            if (currentImage.equals("gurwls0122/dockertest13")) {
+//                                serviceConfigMap.put("image", NEW_IMAGE_PREFIX + "{username}_{repo_name}");
+//                            }
+//                        }
+//                    }
+//                });
+//            }
+//
+//            DumperOptions options = new DumperOptions();
+//            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+//
+//            Yaml updatedYaml = new Yaml(new MyRepresenter(), options);
+//            FileWriter writer = new FileWriter(composeFile);
+//            updatedYaml.dump(yamlMap, writer);
+//
+//            git.add().addFilepattern(".").call();
+//            git.commit().setMessage("Update Docker Compose file").call();
+//            git.push().call();
+//
+//            git.close();
+//        } catch (GitAPIException e) {
+//            System.out.println("Exception occured" + e);
+//        } catch (FileNotFoundException e) {
+//            throw new RuntimeException(e);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
+//    private static class MyRepresenter extends Representer {
+//        @Override
+//        protected NodeTuple representJavaBeanProperty(Object javaBean, Property property, Object propertyValue, Tag customTag) {
+//            NodeTuple defaultNodeTuple = super.representJavaBeanProperty(javaBean, property, propertyValue, customTag);
+//            if (property.getName().equals("image")) {
+//                return new NodeTuple(
+//                        defaultNodeTuple.getKeyNode(),
+//                        new ScalarNode(Tag.STR, NEW_IMAGE_PREFIX + "{username}_{repo_name}", defaultNodeTuple.getValueNode().getStartMark(), defaultNodeTuple.getValueNode().getEndMark(), true, true)
+//                );
+//            }
+//            return defaultNodeTuple;
+//        }
+//    }
 
     public void createDevelopBranch(String localRepositoryPath, String branchName) {
         File repositoryDirectory = new File(localRepositoryPath);
