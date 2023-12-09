@@ -37,6 +37,7 @@ public class Project extends BaseTimeEntity {
         this.isCI = Boolean.TRUE;
     }
 
+    @Transactional
     public int updateProjectVersion() {
         return this.projectVersion = this.projectVersion + 1;
     }
